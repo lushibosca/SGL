@@ -1,0 +1,4533 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self';
+               script-src 'self' 'unsafe-inline';
+               style-src 'self' 'unsafe-inline';
+               img-src 'self' data:;
+               font-src 'self' data:;
+               connect-src 'self' https://api.github.com
+               object-src 'none';
+               base-uri 'self';
+               form-action 'self';
+               upgrade-insecure-requests;">
+  <meta name="referrer" content="no-referrer">
+  <title>Licencias</title>
+  <style>
+    :root {
+      /* Variables de Color */
+      --bg-body: #ffffff;
+      --bg-card: #f0f4f9;
+      --bg-header: #ffffff;
+      --text-main: #1f1f1f;
+      --text-muted: #444746;
+      --border: #e5e7eb;
+      --input-bg: #ffffff;
+      --c-blue: rgba(76, 114, 172, 0.8);
+      --c-green: rgba(76, 172, 140, 0.8);
+      --c-red: rgba(172, 90, 76, 0.8);
+      --c-orange: rgba(210, 120, 50, 0.8);
+      --c-white: #ffffff;
+      --c-purple: rgba(129, 76, 172, 0.8);
+      --c-gray-btn: #dde3ea;
+      --hover: brightness(0.9);
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --radius: 20px;
+
+      /* Gantt Variables */
+      --gantt-line: #e5e7eb;
+      --weekend-bg: rgba(210, 50, 50, 0.1);
+      --holiday-bg: rgba(129, 50, 210, 0.1);
+      --today-highlight: rgba(0, 0, 0, 0.5);
+
+      /* Anchos de columnas */
+      --day-width: 35px;
+      --panoramic-day-width: 5px;
+      --current-day-width: var(--day-width);
+      /* Variable dinámica para el grid */
+
+      /* Altos de filas */
+      --header-h-1: 35px;
+      --header-h-2: 30px;
+      --header-h-3: 30px;
+      --row-h: 35px;
+    }
+
+    body.dark-mode {
+      --bg-body: #131314;
+      --bg-card: #1e1f20;
+      --bg-header: #131314f6;
+      --text-main: #e3e3e3;
+      --text-muted: #b4b4b4;
+      --border: #333131;
+      --input-bg: #313333;
+      --c-gray-btn: #313333;
+      --hover: brightness(1.2);
+      --gantt-line: #28292b;
+      --today-highlight: rgba(255, 255, 255, 0.74);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 0px;
+      /* Oculta barra horizontal */
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-body);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: var(--radius);
+      border: 1px solid var(--bg-body);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* Firefox: ocultar scrollbar horizontal */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .gantt-scroll-container {
+      scrollbar-width: none;
+      /* Firefox: oculta ambas en el gantt */
+    }
+
+    .gantt-scroll-container::-webkit-scrollbar {
+      height: 0px;
+      /* Chrome/Safari: oculta horizontal en gantt */
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-main);
+      transition: background-color 0.3s ease;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--bg-header);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .header-title-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header h1 {
+      font-size: 1.25rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+    }
+
+    .container {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      height: auto;
+      opacity: 0;
+      animation: blurReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes blurReveal {
+      0% {
+        opacity: 0;
+        filter: blur(12px);
+        transform: translateY(-20px);
+      }
+
+      100% {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateY(0);
+      }
+    }
+
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      flex: none;
+      height: auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .gantt-scroll-container {
+      overflow: auto;
+      width: 100%;
+      height: auto;
+      max-height: 75vh;
+      cursor: default;
+      user-select: none;
+      border-radius: var(--radius);
+      transition: max-height 0.25s ease, opacity 0.18s ease;
+      position: relative;
+    }
+
+    ::-webkit-scrollbar-corner {
+      background: var(--bg-body);
+    }
+
+    /* ==================================================== */
+    /* GANTT: ESTRUCTURA CSS GRID MAESTRA                   */
+    /* ==================================================== */
+
+    .gantt-grid {
+      display: flex;
+      flex-direction: column;
+      width: max-content;
+      min-width: 100%;
+      background: var(--bg-card);
+    }
+
+    .gantt-row {
+      display: grid;
+      /* Las columnas se definen de manera robusta. El número de días (--days-count) se inyecta por JS */
+      grid-template-columns: 180px repeat(var(--days-count, 365), var(--current-day-width)) 60px 60px 80px;
+      border-bottom: 1px solid var(--gantt-line);
+    }
+
+    .header-months {
+      height: var(--header-h-1);
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: var(--bg-card);
+    }
+
+    .header-weekdays {
+      height: var(--header-h-2);
+      position: sticky;
+      top: var(--header-h-1);
+      z-index: 60;
+      background: var(--bg-card);
+    }
+
+    .header-days {
+      height: var(--header-h-3);
+      position: sticky;
+      top: calc(var(--header-h-1) + var(--header-h-2));
+      /* 65px automático */
+      z-index: 60;
+      background: var(--bg-card);
+    }
+
+    .sticky-right-header {
+      position: sticky;
+      z-index: 70;
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    .col-mode-toggle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      gap: 0;
+      transition: color 0.2s;
+      white-space: nowrap;
+      padding: 0 4px;
+      overflow: hidden;
+    }
+
+    .col-mode-toggle:hover {
+      color: var(--text-main);
+    }
+
+    .col-mode-toggle .toggle-arrow {
+      font-size: 0.65rem;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+
+    .col-mode-toggle .toggle-label {
+      display: inline-block;
+    }
+
+    .col-mode-toggle .toggle-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      width: 100%;
+    }
+
+    .col-mode-progress-wrap {
+      width: calc(100% - 8px);
+      height: 2px;
+      border-radius: var(--radius);
+      margin-top: 3px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .col-mode-progress-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--text-main);
+      border-radius: var(--radius);
+      transform-origin: left center;
+      transform: scaleX(1);
+    }
+
+    @keyframes colModeCountdown {
+      from {
+        transform: scaleX(1);
+      }
+
+      to {
+        transform: scaleX(0);
+      }
+    }
+
+    @keyframes fadeSwap {
+      0% {
+        opacity: 0;
+        transform: scale(0.85);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .anim-fade {
+      animation: fadeSwap 0.2s ease-out forwards;
+    }
+
+    .person-row {
+      height: var(--row-h);
+    }
+
+    .gantt-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      background: var(--bg-card);
+      text-align: center;
+    }
+
+    /* ==================================================== */
+    /* GANTT: POSICIONAMIENTO STICKY EN GRID                */
+    /* ==================================================== */
+
+    .sticky-left {
+      position: sticky;
+      left: 0;
+      z-index: 30;
+      background: var(--bg-card);
+      border-right: 1px solid var(--gantt-line);
+      justify-content: flex-start !important;
+      padding: 0 0.75rem !important;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .sticky-right {
+      position: sticky;
+      z-index: 30;
+      background: var(--bg-card);
+      border-left: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Coordenadas derechas absolutas para las columnas finales fijas */
+    .col-status {
+      right: 0;
+    }
+
+    .col-winter {
+      right: 80px;
+    }
+
+    .col-summer {
+      right: 140px;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Esquinas (Cruzan Left y Top) */
+    .sticky-left-header {
+      position: sticky;
+      left: 0;
+      z-index: 70 !important;
+      background: var(--bg-card);
+      border-right: 1px solid var(--gantt-line);
+      color: var(--text-main);
+    }
+
+    .sticky-right-header {
+      position: sticky;
+      top: 0;
+      z-index: 70;
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    /* ==================================================== */
+    /* CABECERAS Y CELDAS DE DÍAS                           */
+    /* ==================================================== */
+
+    .month-header {
+      color: var(--text-main);
+      font-size: 0.9rem;
+      text-transform: capitalize;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.2s;
+    }
+
+    .day-name-header {
+      color: var(--text-muted);
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .day-num-header {
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    /* Sensor del día (ancho y alto es dictado por la grilla madre, solo agregamos el padding) */
+    .day-cell {
+      display: block;
+      /* anulamos el flex para el contenido de la barra */
+      padding: 6px 0;
+      position: relative;
+    }
+
+    .bar-range-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--c-white);
+      pointer-events: none;
+      z-index: 5;
+      line-height: 1;
+    }
+
+    .gantt-grid.panoramic-mode .bar-range-label {
+      display: none;
+    }
+
+    /* ==================================================== */
+    /* ESTADOS DE DÍAS (SINGLE SOURCE OF TRUTH)             */
+    /* ==================================================== */
+
+    .type-workday {
+      background: var(--bg-card);
+    }
+
+    .type-weekend {
+      background: var(--weekend-bg);
+    }
+
+    .day-name-header.type-weekend,
+    .day-num-header.type-weekend {
+      color: var(--c-red);
+    }
+
+    .type-holiday {
+      background: var(--holiday-bg);
+    }
+
+    .day-name-header.type-holiday,
+    .day-num-header.type-holiday {
+      color: var(--c-purple);
+    }
+
+
+    .type-today {
+      background: var(--today-highlight);
+    }
+
+    .day-name-header.type-today,
+    .day-num-header.type-today,
+    .day-cell.type-today {
+      color: var(--bg-card);
+    }
+
+    /* ==================================================== */
+    /* BARRAS DE LICENCIAS                                  */
+    /* ==================================================== */
+
+    .bar-segment {
+      height: 100%;
+      width: 100%;
+      background: transparent;
+      transition: background 0.2s, width 0.2s, margin 0.2s, border-radius 0.2s;
+    }
+
+    .bar-segment.active.summer {
+      background: var(--c-orange);
+    }
+
+    .bar-segment.active.winter {
+      background: var(--c-blue);
+    }
+
+    .bar-segment.bar-start {
+      border-top-left-radius: var(--radius);
+      border-bottom-left-radius: var(--radius);
+      margin-left: 4px;
+      width: calc(100% - 4px);
+    }
+
+    .bar-segment.bar-end {
+      border-top-right-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
+      margin-right: 4px;
+      width: calc(100% - 4px);
+    }
+
+    .bar-segment.bar-single {
+      border-radius: var(--radius);
+    }
+
+    /* === VISTA PANORÁMICA CSS-ONLY === */
+    .panoramic-mode {
+      --current-day-width: var(--panoramic-day-width);
+    }
+
+
+
+    .gantt-grid.panoramic-mode .header-weekdays,
+    .gantt-grid.panoramic-mode .header-days {
+      display: none;
+      /* Con Grid escondemos la fila entera de un golpe, sin hackear anchos */
+    }
+
+    .gantt-grid.panoramic-mode .day-cell {
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .gantt-grid.panoramic-mode .bar-segment.active {
+      border-radius: 1px;
+    }
+
+    .gantt-grid.panoramic-mode .bar-segment.bar-single,
+    .gantt-grid.panoramic-mode .bar-segment.bar-start,
+    .gantt-grid.panoramic-mode .bar-segment.bar-end {
+      border-radius: 1px;
+      margin: 0;
+      width: 100%;
+    }
+
+    .gantt-grid.panoramic-mode .month-header {
+      font-size: 0.78rem;
+    }
+
+    /* En panorámico: ocultar colores de weekend/holiday en celdas */
+    .gantt-grid.panoramic-mode .day-cell.type-weekend,
+    .gantt-grid.panoramic-mode .day-cell.type-holiday {
+      background: transparent;
+    }
+
+    /* Separador de mes */
+    .month-start {
+      border-left: 1px solid var(--gantt-line);
+    }
+
+    /* Buscador */
+    .search-wrapper {
+      display: flex;
+      align-items: center;
+      padding: 4px 6px;
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .search-inner {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    input:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transition: opacity 0.2s ease;
+    }
+
+    input:not(:disabled) {
+      transition: opacity 0.2s ease;
+    }
+
+    .search-input {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      font-size: 0.7rem;
+      padding: 4px;
+      border-radius: var(--radius);
+      outline: none;
+      min-width: 0;
+    }
+
+    .select-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--input-bg);
+      color: var(--text-main);
+      font-size: 0.875rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .select-input:focus {
+      border-color: var(--c-blue);
+    }
+
+    .select-input:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-clear-search {
+      position: absolute;
+      right: 5px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Nuevas propiedades para ocultar por defecto */
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    /* Mostrar el botón "X" solo cuando hay texto escrito */
+    .search-input:not(:placeholder-shown)+.btn-clear-search {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .year-selector {
+      width: auto;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--input-bg);
+      color: var(--text-main);
+      font-size: 0.875rem;
+      font-weight: bold;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .header-year-selector {
+      font-size: 1.25rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .year-selector:focus {
+      border-color: var(--c-blue);
+    }
+
+    /* Badges */
+    .badge {
+      padding: 0.5rem;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+      min-width: 60px;
+      text-align: center;
+      color: var(--text-main);
+    }
+
+    .toast.info {
+      background: var(--c-blue);
+    }
+
+    .toast.error {
+      background: var(--c-red);
+    }
+
+    .toast.success {
+      background: var(--c-green);
+    }
+
+    /* MODALS & OVERLAYS */
+    .modal {
+      display: flex;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 0.25rem;
+      backdrop-filter: blur(10px);
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .modal.show {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      padding: 1rem;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      transform: translateY(24px) scale(0.96);
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+    }
+
+    .modal-content h3 {
+      padding-bottom: 1rem;
+    }
+
+    .modal.show .modal-content {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    /* Inputs & Buttons */
+    .form-group {
+      margin-bottom: 0.5rem;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding-left: 0.5rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="password"],
+    input[type="date"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--input-bg);
+      color: var(--text-main);
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .btn-cancel,
+    .btn-danger,
+    .btn-primary,
+    .btn-range-confirm {
+      background: var(--c-gray-btn);
+      color: var(--text-main);
+      padding: 0.75rem 1.5rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .icon-btn {
+      padding: 0.25rem;
+      background: transparent;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .icon-btn:disabled {
+      color: var(--text-muted);
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .icon {
+      width: 1.2em;
+      height: 1.2em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 0.5rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      color: var(--c-white);
+      padding: 0.8rem 1.5rem;
+      border-radius: var(--radius);
+      opacity: 0;
+      transition: 0.3s;
+      pointer-events: none;
+      z-index: 1200;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .sticky-left,
+    .sticky-right,
+    .sticky-left-header,
+    .sticky-right-header {
+      cursor: default;
+    }
+
+    /* Modal importar */
+    .import-dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 1rem;
+    }
+
+    .import-dropzone:hover {
+      border-color: var(--c-blue);
+      background: var(--input-bg);
+    }
+
+    .import-dropzone.has-file {
+      border-color: var(--c-green);
+      color: var(--text-main);
+    }
+
+    .import-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .import-actions button {
+      flex: 1;
+      padding: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .import-actions button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .person-cell {
+      cursor: pointer !important;
+      gap: 0.5rem;
+    }
+
+    /* Menú contextual custom */
+    #ctx-menu {
+      position: fixed;
+      z-index: 9000;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+      padding: 0.3rem 0;
+      min-width: 180px;
+      opacity: 0;
+      transform: scale(0.94) translateY(-4px);
+      transition: opacity 0.12s ease, transform 0.12s ease;
+      pointer-events: none;
+    }
+
+    #ctx-menu.show {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    .ctx-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.12s;
+      user-select: none;
+    }
+
+    .ctx-item:hover {
+      background: rgba(76, 114, 172, 0.1);
+    }
+
+    .ctx-item .ctx-icon {
+      width: 1em;
+      height: 1em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }    
+
+    .ctx-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0.25rem 0;
+    }
+
+    .person-row {
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .person-row.filtered-out {
+      opacity: 0;
+      pointer-events: none;
+      transform: scaleY(0.8);
+      transform-origin: top;
+    }
+
+    .person-row.keyboard-focus .sticky-left {
+      filter: var(--hover);
+    }
+
+    .person-cell.has-visible-license .person-name-span {
+      
+    }
+
+    .toggle-btn {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--c-gray-btn);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .toggle-btn.active {
+      border-color: var(--c-orange);
+      background: rgba(172, 119, 76, 0.15);
+      color: var(--c-orange);
+    }
+
+    /* Lista de vacaciones en modal */
+    .vac-list-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .vac-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .vac-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.4rem 0.75rem;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .vac-item-season {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-left: 0.5rem;
+    }
+
+    .vac-item-delete {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 2px;
+      border-radius: var(--radius);
+      line-height: 1;
+      flex-shrink: 0;
+      transition: color 0.2s;
+    }
+
+    .vac-list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0.5rem;
+    }
+
+    .btn-primary:hover,
+    .btn-danger:hover,
+    .btn-cancel:hover,
+    .btn-range-confirm:hover,
+    .month-header:hover,
+    .icon-btn:hover,
+    .btn-clear-search:hover,
+    .person-cell:hover,
+    .vac-item:hover,
+    .day-cell:hover {
+      filter: var(--hover);
+    }
+
+    /* Formulario de agregar rango */
+    .add-range-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        margin-bottom 0.3s ease;
+    }
+
+    .add-range-form.open {
+      max-height: 200px;
+      opacity: 1;
+      transform: translateY(0);
+      margin-bottom: 0.5rem;
+    }
+
+    .holiday-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .holiday-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--input-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .holiday-item .holiday-date {
+      font-weight: 600;
+      color: var(--c-orange);
+    }
+
+    .holiday-item .holiday-name {
+      flex: 1;
+      margin-left: 0.75rem;
+      color: var(--text-main);
+    }
+
+    .holiday-item .btn-remove-holiday {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.2rem 0.4rem;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      width: auto;
+      min-width: unset;
+      transition: color 0.2s;
+    }
+
+    .holiday-item .btn-remove-holiday:hover {
+      color: var(--c-red);
+    }
+
+    .holiday-add-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    .holiday-add-row .form-group {
+      margin-bottom: 0;
+    }
+
+    /* Areas */
+    .area-combobox {
+      position: relative;
+      width: 100%;
+    }
+
+    .area-combobox-row {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .area-combobox-input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--input-bg);
+      color: var(--text-main);
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .area-combobox-input:focus {
+      border-color: var(--c-blue);
+    }
+
+    .area-combobox-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      z-index: 200;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .area-combobox-dropdown.open {
+      display: block;
+    }
+
+    .area-combobox-option {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .area-combobox-option:hover,
+    .area-combobox-option.highlighted {
+      background: rgba(76, 114, 172, 0.1);
+    }
+
+    .area-combobox-option.already-selected {
+      color: var(--text-muted);
+    }
+
+    .area-combobox-empty {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .area-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin-top: 0.4rem;
+      min-height: 0;
+    }
+
+    .area-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius);
+      background: rgba(76, 114, 172, 0.15);
+      border: 1px solid rgba(76, 114, 172, 0.3);
+      color: var(--c-blue);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .area-tag-remove {
+      background: none;
+      border: none;
+      color: var(--c-blue);
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.85rem;
+      line-height: 1;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+
+    .area-tag-remove:hover {
+      opacity: 1;
+    }
+
+    .area-management-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 0.75rem;
+    }
+
+    .area-management-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.4rem 0.75rem;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+    }
+
+    .area-management-item .btn-remove-area {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.1rem 0.4rem;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      transition: color 0.2s;
+    }
+
+    .area-management-item .btn-remove-area:hover {
+      color: var(--c-red);
+    }
+
+    .area-add-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+      margin-bottom: 0.5rem;
+    }
+
+    .area-add-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .person-row[data-area] .sticky-left::after {
+      content: attr(data-area-label);
+      font-size: 0.65rem;
+      color: var(--c-blue);
+      margin-left: 0.4rem;
+      opacity: 0.8;
+    }
+
+    /* Rango*/
+    .range-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+      margin-top: 0.5rem;
+    }
+
+    .range-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .range-row select:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Status dot - En curso */
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.25;
+      }
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: transparent;
+    }
+
+    .status-dot.active-curso {
+      background: var(--c-blue);
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+
+    .status-dot.active-completa {
+      background: var(--c-green, #4caf7d);
+    }
+
+    .status-dot.active-libre {
+      width: auto;
+      height: auto;
+      border-radius: 50%;
+      background: var(--c-orange, #e8952a);
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 800;
+      line-height: 1;
+      padding: 1px 4px;
+      border-radius: 999px;
+    }
+
+    /* === GANTT LOCK / UNLOCK === */
+    .gantt-scroll-container.gantt-locked .day-cell {
+      cursor: not-allowed !important;
+    }
+
+    .gantt-scroll-container.gantt-locked .day-cell:hover {
+      filter: none !important;
+    }
+
+    .person-row.gantt-unlocked .sticky-left {
+      background-color: var(--text-main);
+      color: var(--bg-body);
+    }
+
+    .person-row.gantt-unlocked .day-cell {
+      cursor: pointer !important;
+    }
+
+    /* Tooltip de bar-segment */
+    #bar-tooltip {
+      position: fixed;
+      z-index: 9999;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.65rem;
+      font-size: 0.78rem;
+      color: var(--text-main);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      pointer-events: none;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    #bar-tooltip.visible {
+      opacity: 1;
+    }
+
+    #bar-tooltip .tt-name {
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+
+    #bar-tooltip .tt-range {
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      margin-bottom: 0.15rem;
+    }
+
+    #bar-tooltip .tt-season {
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+
+    #bar-tooltip .tt-season.summer {
+      color: var(--c-summer, #e8a04a);
+    }
+
+    #bar-tooltip .tt-season.winter {
+      color: var(--c-blue);
+    }
+
+    /* ── Toggle switch (GistSync) ── */
+    .toggle-switch {
+      width: 42px; height: 24px; background: var(--border); border-radius: 12px;
+      position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+    }
+    .toggle-switch.on { background: var(--c-green); }
+    .toggle-thumb {
+      position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+      background: var(--c-white); border-radius: 50%; transition: left 0.2s;
+    }
+    .toggle-switch.on .toggle-thumb { left: 21px; }
+
+    /* ── Spinner en botón Gist ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .icon-btn-spinning .icon { animation: spin 0.8s linear infinite; display: inline-block; }
+  </style>
+</head>
+
+<body>
+  <svg style="display: none;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <symbol id="icon-user-plus" viewBox="0 0 24 24">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="8.5" cy="7" r="4" />
+      <line x1="20" y1="8" x2="20" y2="14" />
+      <line x1="23" y1="11" x2="17" y2="11" />
+    </symbol>
+    <symbol id="icon-holidays" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <path d="M12 13l1 2.5 2.5.5-2 1.5.5 2.5-2-1.5-2 1.5.5-2.5-2-1.5 2.5-.5z" />
+    </symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24">
+      <line x1="4" y1="6" x2="20" y2="6" class="icon-line" stroke="currentColor" stroke-width="2"></line>
+      <line x1="4" y1="12" x2="20" y2="12" class="icon-line" stroke="currentColor" stroke-width="2"></line>
+      <line x1="4" y1="18" x2="20" y2="18" class="icon-line" stroke="currentColor" stroke-width="2"></line>
+    </symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </symbol>
+    <symbol id="icon-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </symbol>
+    <symbol id="icon-calendar" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </symbol>
+    <symbol id="icon-save" viewBox="0 0 24 24">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
+    </symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </symbol>
+    <symbol id="icon-edit" viewBox="0 0 24 24">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </symbol>
+    <symbol id="icon-mouse" viewBox="0 0 24 24">
+      <rect x="6" y="3" width="12" height="18" rx="6" ry="6" />
+      <path d="M12 3v7M6 10h12" />
+    </symbol>
+    <symbol id="icon-undo" viewBox="0 0 24 24">
+      <path d="M3 7v6h6" />
+      <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13" />
+    </symbol>
+    <symbol id="icon-redo" viewBox="0 0 24 24">
+      <path d="M21 7v6h-6" />
+      <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3L21 13" />
+    </symbol>
+    <symbol id="icon-combine" viewBox="0 0 24 24">
+      <path d="M4 6h4l4 6h8" />
+      <path d="M4 18h4l4-6" />
+    </symbol>
+    <symbol id="icon-replace-swap" viewBox="0 0 24 24">
+      <polyline points="17 4 21 8 17 12" />
+      <line x1="3" y1="8" x2="21" y2="8" />
+      <polyline points="7 20 3 16 7 12" />
+      <line x1="21" y1="16" x2="3" y2="16" />
+    </symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </symbol>
+    <symbol id="icon-briefcase" viewBox="0 0 24 24">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </symbol>
+    <symbol id="icon-gist" viewBox="0 0 24 24">
+      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+    </symbol>
+    <symbol id="icon-cloud-up" viewBox="0 0 24 24">
+      <polyline points="16 16 12 12 8 16" />
+      <line x1="12" y1="12" x2="12" y2="21" />
+      <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+    </symbol>
+    <symbol id="icon-cloud-down" viewBox="0 0 24 24">
+      <polyline points="8 17 12 21 16 17" />
+      <line x1="12" y1="12" x2="12" y2="21" />
+      <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29" />
+    </symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </symbol>
+    <symbol id="icon-eye-off" viewBox="0 0 24 24">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </symbol>
+    <symbol id="icon-external-link" viewBox="0 0 24 24">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </symbol>
+  </svg>
+  <div class="header">
+    <div class="header-title-group">
+      <h1><svg class="icon">
+          <use href="#icon-calendar" />
+        </svg> Licencias</h1>
+      <select id="year-selector" class="year-selector header-year-selector" onchange="Gantt.changeYear(this.value)"></select>
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <button class="icon-btn" id="btn-undo" onclick="Historial.undo()" title="Deshacer (Ctrl+Z)" disabled><svg class="icon"><use href="#icon-undo" /></svg></button>
+      <button class="icon-btn" id="btn-redo" onclick="Historial.redo()" title="Rehacer (Ctrl+Y)" disabled><svg class="icon"><use href="#icon-redo" /></svg></button>
+      <button class="icon-btn" onclick="UI.openConfig()"><svg class="icon"><use href="#icon-menu" /></svg></button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="controls-bar">
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button class="btn-primary" style="width: auto;" onclick="Gantt.scrollToToday()">Hoy</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="gantt-scroll-container custom-scroll" id="gantt-container">
+        <div class="gantt-grid" id="gantt-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Notificación</div>
+  <div id="bar-tooltip">
+    <div class="tt-name"></div>
+    <div class="tt-range"></div>
+    <div class="tt-season"></div>
+  </div>
+
+  <!-- Menú contextual personas -->
+  <div id="ctx-menu">
+    <div class="ctx-item" id="ctx-item-config" onclick="CtxMenu.action('config')">
+      <svg class="ctx-icon" viewBox="0 0 24 24">
+        <use href="#icon-edit" />
+      </svg>
+      Configurar
+    </div>
+    <div class="ctx-divider"></div>
+    <div class="ctx-item" id="ctx-item-gantt" onclick="CtxMenu.action('gantt')">
+      <svg class="ctx-icon" viewBox="0 0 24 24">
+        <use href="#icon-edit" />
+      </svg>
+      <span id="ctx-gantt-label">Editar Calendario</span>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-confirm" style="z-index:400;">
+    <div class="modal-content" style="max-width:400px;">
+      <h3 id="confirm-title">Confirmar</h3>
+      <p id="confirm-msg" style="color:var(--text-muted); margin-bottom:1rem; line-height:1.5;"></p>
+      <div class="btn-group">
+        <button class="btn-primary" id="confirm-ok">Continuar</button>
+        <button class="btn-cancel" onclick="UI.closeConfirm()"><svg class="icon">
+            <use href="#icon-close" />
+          </svg>Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-holidays">
+    <div class="modal-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <h3>Feriados</h3>
+        <select id="holiday-year-selector" class="year-selector"
+          onchange="Holidays.renderList(parseInt(this.value))"></select>
+      </div>
+      <div class="holiday-list" id="holiday-list"></div>
+      <div class="holiday-add-row">
+        <div class="form-group" style="flex:1;">
+          <label>Fechas</label>
+          <input type="text" id="holiday-date-input" placeholder="1/1, 25/12/26, 1/5/2025..." maxlength="200">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Nombre (opcional)</label>
+          <input type="text" id="holiday-name-input" placeholder="Ej: Año Nuevo" maxlength="60">
+        </div>
+      </div>
+      <div class="btn-group" style="margin-top:1rem;">
+        <button class="btn-primary" onclick="Holidays.add()">+ Agregar</button>
+        <button class="btn-cancel" onclick="UI.openConfig()"><svg class="icon">
+            <use href="#icon-undo" />
+          </svg>Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-new-person">
+    <div class="modal-content">
+      <h3>Nueva Persona</h3>
+      <div class="form-group"><label>Nombre</label><input type="text" id="p-name"
+          placeholder="Nombre o varios separados por coma"></div>
+      <div class="form-group">
+        <label>Área</label>
+        <div class="area-combobox" id="p-area-combobox">
+          <div class="area-combobox-row">
+            <input type="text" class="area-combobox-input" id="p-area-input" placeholder="Buscar área..."
+              autocomplete="off" oninput="Areas.comboFilter('p-area')" onfocus="Areas.comboOpen('p-area')"
+              onclick="Areas.comboOpen('p-area')" onkeydown="Areas.comboKey(event,'p-area')">
+          </div>
+          <div class="area-combobox-dropdown" id="p-area-dropdown"></div>
+        </div>
+        <div class="area-chips" id="p-area-chips"></div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-primary" onclick="Data.savePerson()"><svg class="icon">
+            <use href="#icon-user-plus" />
+          </svg>Agregar</button>
+        <button class="btn-cancel" id="btn-new-person-back" onclick="UI.openConfig()"><svg class="icon">
+            <use href="#icon-undo" />
+          </svg>Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-edit-person">
+    <div class="modal-content" style="max-width:600px;">
+      <h3>Editar Persona</h3>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+
+        <!-- Columna izquierda: datos de la persona + agregar licencia -->
+        <div style="flex:1 1 50%; min-width:0;">
+          <div class="form-group"><label>Nombre</label><input type="text" id="ep-name" placeholder="Nombre completo">
+          </div>
+          <div class="form-group">
+            <label>Área</label>
+            <div class="area-combobox" id="ep-area-combobox">
+              <div class="area-combobox-row">
+                <input type="text" class="area-combobox-input" id="ep-area-input" placeholder="Buscar área..."
+                  autocomplete="off" oninput="Areas.comboFilter('ep-area')" onfocus="Areas.comboOpen('ep-area')"
+                  onclick="Areas.comboOpen('ep-area')" onkeydown="Areas.comboKey(event,'ep-area')">
+              </div>
+              <div class="area-combobox-dropdown" id="ep-area-dropdown"></div>
+            </div>
+            <div class="area-chips" id="ep-area-chips"></div>
+          </div>
+          <div style="margin-top:0.75rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+              <label style="font-weight:bold; padding:0;">Configuracion año</label>
+              <select id="ep-year-select" class="year-selector" style="width:90px;"
+                onchange="UI.loadYearConfig(this.value)"></select>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <label style="font-size:0.82rem; padding:0;">Licencias Personalizadas</label>
+              <button type="button" style="width:50px" id="ep-custom-limits" class="toggle-btn"
+                onclick="UI.toggleCustomLimits(this.classList.contains('active'))">No</button>
+            </div>
+            <div id="ep-limits-fields" style="display:none;">
+              <div class="range-row" style="margin-top:0.5rem;">
+                <div class="form-group"><label>Verano</label><input type="number" id="ep-summer" min="0"></div>
+                <div class="form-group"><label>Invierno</label><input type="number" id="ep-winter" min="0"></div>
+                <div class="form-group">
+                  <label>Opcional</label>
+                  <button type="button" id="ep-unlimited" class="toggle-btn"
+                    onclick="this.classList.toggle('active'); UI.toggleEditLimits(this.classList.contains('active'))">Libre</button>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.5rem;">
+              <label style="font-size:0.82rem; padding:0;">Temporada Personalizada</label>
+              <button type="button" style="width:50px" id="ep-custom-season" class="toggle-btn"
+                onclick="UI.toggleCustomSeason(this.classList.contains('active'))">No</button>
+            </div>
+            <div id="ep-season-fields" style="display:none;">
+              <div class="range-row">
+                <div class="form-group">
+                  <label>Inicio verano</label>
+                  <select id="ep-sStart" class="select-input">
+                    <option value="0">Enero</option>
+                    <option value="1">Febrero</option>
+                    <option value="2">Marzo</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Mayo</option>
+                    <option value="5">Junio</option>
+                    <option value="6">Julio</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Septiembre</option>
+                    <option value="9">Octubre</option>
+                    <option value="10">Noviembre</option>
+                    <option value="11">Diciembre</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Inicio invierno</label>
+                  <select id="ep-sEnd" class="select-input">
+                    <option value="0">Enero</option>
+                    <option value="1">Febrero</option>
+                    <option value="2">Marzo</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Mayo</option>
+                    <option value="5">Junio</option>
+                    <option value="6">Julio</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Septiembre</option>
+                    <option value="9">Octubre</option>
+                    <option value="10">Noviembre</option>
+                    <option value="11">Diciembre</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button id="btn-edit-gantt" class="btn-cancel" style="margin-top:0.75rem; width:100%;"
+            onclick="UI.toggleGanttEditMode()"><svg class="icon">
+              <use href="#icon-edit" />
+            </svg>Editar Calendario</button>
+        </div>
+
+        <!-- Columna derecha: licencias asignadas -->
+        <div style="flex:1 1 50%; min-width:0; display:flex; flex-direction:column;">
+          <div id="person-vac-section" style="flex:1;">
+            <div style="margin-top:0.5rem;">
+              <label style="font-size:0.82rem; padding:0;">Agregar Licencia</label>
+              <div class="range-row">
+                <div class="form-group">
+                  <label>Desde</label>
+                  <input type="text" id="range-start" placeholder="1/1, 1/1/26..." maxlength="20">
+                </div>
+                <div class="form-group">
+                  <label>Hasta</label>
+                  <input type="text" id="range-end" placeholder="1/1, 1/1/26..." maxlength="20">
+                </div>
+                <button class="icon-btn" style="background: var(--c-gray-btn); width:50px"
+                  onclick="UI.confirmAddRange()">+</button>
+              </div>
+            </div>
+            <div class="vac-list-header">
+              <span class="vac-list-title">Licencias asignadas</span>
+            </div>
+            <div id="person-vac-items" class="vac-list"></div>
+          </div>
+
+        </div>
+      </div>
+      <div class="btn-group" style="margin-top: 0.75rem;">
+        <button class="btn-primary" onclick="Data.savePerson()"><svg class="icon">
+            <use href="#icon-save" />
+          </svg>Guardar</button>
+        <button class="btn-danger" onclick="Data.deletePerson()"><svg class="icon">
+            <use href="#icon-trash" />
+          </svg>Eliminar</button>
+        <button class="btn-cancel" onclick="UI.closeModals()"><svg class="icon">
+            <use href="#icon-close" />
+          </svg>Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-areas">
+    <div class="modal-content">
+      <h3>Areas</h3>
+      <div class="area-management-list" id="areas-list"></div>
+      <div class="range-row">
+        <div class="form-group">
+          <label>Nueva área</label>
+          <input type="text" id="area-name-input" placeholder="Ej: Sistemas, RRHH, Contabilidad..." maxlength="100">
+        </div>
+        <button class="btn-primary" style="width:auto;padding:0.5rem 1rem;" onclick="Areas.add()">+
+          Agregar</button>
+      </div>
+      <div class="btn-group" style="margin-top:0.75rem">
+        <button class="btn-cancel" onclick="UI.openConfig()"><svg class="icon">
+            <use href="#icon-undo" />
+          </svg>Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-import">
+    <div class="modal-content">
+      <h3>Restaurar backup</h3>
+      <div class="import-dropzone" id="import-dropzone" onclick="document.getElementById('import-file-input').click()">
+        <div id="import-dropzone-text">📂 Tocá para seleccionar un archivo JSON</div>
+      </div>
+      <input type="file" id="import-file-input" accept=".json,application/json" hidden
+        onchange="UI.onImportFileSelected(this)">
+      <div class="import-warning" id="import-warning" style="display:none;">
+        <span id="import-warning-text"></span>
+        <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Podés importar
+          igual tocando Reemplazar o Combinar.</span>
+      </div>
+      <div class="import-actions">
+        <button class="btn-danger" id="btn-import-replace" disabled onclick="UI.confirmImport('replace')"><svg
+            class="icon">
+            <use href="#icon-replace-swap" />
+          </svg>Reemplazar</button>
+        <button class="btn-primary" id="btn-import-merge" disabled onclick="UI.confirmImport('merge')"><svg
+            class="icon">
+            <use href="#icon-combine" />
+          </svg>Combinar</button>
+      </div>
+      <div class="btn-group" style="margin-top:0.75rem">
+        <button class="btn-cancel" onclick="UI.openConfig()"><svg class="icon">
+            <use href="#icon-undo" />
+          </svg>Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-config">
+    <div class="modal-content" style="max-width:520px;">
+      <h3>Configuración</h3>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+
+        <!-- Columna izquierda: ajustes -->
+        <div style="flex:1 1 50%; min-width:0;">
+          <label style="font-weight:bold; margin-bottom:0.25rem; display:block;"><svg class="icon">
+              <use href="#icon-calendar" />
+            </svg> Temporada predeterminada</label>
+          <div class="range-row">
+            <div style="flex:1">
+              <label style="font-size:0.8rem">Inicio verano</label>
+              <select id="conf-s-start" class="select-input">
+                <option value="0">Enero</option>
+                <option value="1">Febrero</option>
+                <option value="2">Marzo</option>
+                <option value="3">Abril</option>
+                <option value="4">Mayo</option>
+                <option value="5">Junio</option>
+                <option value="6">Julio</option>
+                <option value="7">Agosto</option>
+                <option value="8">Septiembre</option>
+                <option value="9">Octubre</option>
+                <option value="10">Noviembre</option>
+                <option value="11">Diciembre</option>
+              </select>
+            </div>
+            <div style="flex:1">
+              <label style="font-size:0.8rem">Inicio invierno</label>
+              <select id="conf-s-end" class="select-input">
+                <option value="0">Enero</option>
+                <option value="1">Febrero</option>
+                <option value="2">Marzo</option>
+                <option value="3">Abril</option>
+                <option value="4">Mayo</option>
+                <option value="5">Junio</option>
+                <option value="6">Julio</option>
+                <option value="7">Agosto</option>
+                <option value="8">Septiembre</option>
+                <option value="9">Octubre</option>
+                <option value="10">Noviembre</option>
+                <option value="11">Diciembre</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:0.75rem;">
+            <label style="font-weight:bold; margin-bottom:0.25rem; display:block;"><svg class="icon">
+                <use href="#icon-holidays" />
+              </svg> Licencias predeterminadas</label>
+            <div class="range-row">
+              <div class="form-group"><label>Verano</label><input type="number" id="conf-summer"></div>
+              <div class="form-group"><label>Invierno</label><input type="number" id="conf-winter"></div>
+            </div>
+          </div>
+          <div class="btn-group" style="margin-top:0.75rem; flex-direction:column;">
+            <button class="btn-cancel" onclick="UI.openHolidayModal()"><svg class="icon">
+                <use href="#icon-holidays" />
+              </svg> Feriados</button>
+            <button class="btn-cancel" onclick="UI.openAreasModal()"><svg class="icon">
+                <use href="#icon-briefcase" />
+              </svg> Areas</button>
+            <button class="btn-primary" onclick="UI.closeModals(); UI.openPersonModal()"><svg class="icon">
+                <use href="#icon-user-plus" />
+              </svg> Nueva Persona</button>
+          </div>
+        </div>
+
+        <!-- Columna derecha: acciones -->
+        <div style="display:flex; flex-direction:column; gap:0.5rem; flex:1 1 50%; min-width:0;">
+          <div class="form-group">
+            <label style="font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+              <span><svg class="icon">
+                  <use href="#icon-mouse" />
+                </svg> Velocidad de scroll</span>
+              <span id="conf-scroll-speed-label"
+                style="font-size:1rem; font-weight:700; color:var(--c-blue); min-width:1.5rem; text-align:right;">3</span>
+            </label>
+            <input type="range" id="conf-scroll-speed" min="1" max="10" step="1" value="3"
+              oninput="document.getElementById('conf-scroll-speed-label').textContent = this.value"
+              style="width:100%; margin-top:0.4rem; accent-color:var(--c-blue);">
+          </div>
+          <button class="btn-cancel" onclick="Data.exportData()"><svg class="icon">
+              <use href="#icon-upload" />
+            </svg>Respaldar</button>
+          <button class="btn-cancel" onclick="UI.openImportModal()"><svg class="icon">
+              <use href="#icon-download" />
+            </svg>Restaurar</button>
+          <button class="btn-cancel" onclick="UI.openGist()"><svg class="icon">
+              <use href="#icon-gist" />
+            </svg>GitHub Gist</button>
+          <button class="btn-cancel" onclick="UI.resetAll()"><svg class="icon">
+              <use href="#icon-trash" />
+            </svg>Restablecer</button>
+          <div class="btn-group">
+            <button class="btn-primary" onclick="UI.toggleTheme()">
+              <svg class="icon" id="theme-icon">
+                <use href="#icon-moon" />
+              </svg>
+              <span id="theme-label">Modo oscuro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="btn-group" style="margin-top:1rem">
+        <button class="btn-primary" onclick="Data.saveConfig()"><svg class="icon">
+            <use href="#icon-save" />
+          </svg>Guardar</button>
+        <button class="btn-cancel" onclick="UI.closeModals()"><svg class="icon">
+            <use href="#icon-close" />
+          </svg>Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL GIST SYNC ── -->
+  <div class="modal" id="modal-gist">
+    <div class="modal-content">
+      <h3><svg class="icon"><use href="#icon-gist"/></svg> GitHub Gist</h3>
+      <div class="form-group">
+        <label>Personal Access Token</label>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <input type="password" id="gist-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false" style="flex:1;">
+          <button class="icon-btn" onclick="GistSync.toggleToken()" title="Mostrar/ocultar">
+            <svg class="icon"><use href="#icon-eye" id="gist-eye-icon"/></svg>
+          </button>
+          <a class="icon-btn" href="https://github.com/settings/tokens/new?description=Licencias+sync&scopes=gist" target="_blank" title="Crear token en GitHub">
+            <svg class="icon"><use href="#icon-upload"/></svg>
+          </a>
+        </div>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-top:0.4rem;">⚠️ El token se guarda localmente. Usá scope mínimo (<code>gist</code>) y con expiración.</p>
+      </div>
+      <div class="form-group">
+        <label>Gist ID</label>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <input type="text" id="gist-id" placeholder="Dejar vacío para crear uno nuevo" autocomplete="off" spellcheck="false" style="flex:1;">
+          <a id="gist-link-btn" class="icon-btn" target="_blank" title="Abrir en GitHub" style="display:none;">
+            <svg class="icon"><use href="#icon-external-link"/></svg>
+          </a>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.5rem;margin:0.75rem 0;">
+        <button class="btn-primary" id="btn-gist-subir" onclick="GistSync.subir()" style="flex:1;"><svg class="icon"><use href="#icon-cloud-up"/></svg> Subir</button>
+        <button class="btn-cancel" id="btn-gist-bajar" onclick="GistSync.bajar()" style="flex:1;"><svg class="icon"><use href="#icon-cloud-down"/></svg> Bajar</button>
+      </div>
+      <label style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;cursor:pointer;padding:0.4rem 0;">
+        <span>Subir automáticamente al guardar</span>
+        <div class="toggle-switch" id="gist-autosync-toggle" onclick="GistSync.toggleAuto()"><div class="toggle-thumb"></div></div>
+      </label>
+      <p id="gist-sync-status" style="font-size:0.78rem;color:var(--text-muted);min-height:1.2em;margin:0.4rem 0 0;"></p>
+      <div class="btn-group" style="margin-top:1rem;">
+        <button class="btn-primary" onclick="GistSync.guardarConfig()"><svg class="icon"><use href="#icon-save"/></svg>Guardar</button>
+        <button class="btn-cancel" onclick="UI.openConfig()"><svg class="icon"><use href="#icon-undo"/></svg>Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL GIST NOVEDADES ── -->
+  <div class="modal" id="modal-gist-novedades">
+    <div class="modal-content" style="max-width:420px;">
+      <h3><svg class="icon"><use href="#icon-cloud-down"/></svg> Novedades del Gist</h3>
+      <p id="gist-novedades-msg" style="color:var(--text-muted);font-size:0.875rem;line-height:1.5;margin-bottom:1rem;"></p>
+      <div class="btn-group">
+        <button class="btn-primary" id="gist-novedades-ok">Aplicar</button>
+        <button class="btn-cancel" onclick="UI.closeModals()"><svg class="icon"><use href="#icon-close"/></svg>Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // --- SECURITY & UTILS MODULE ---
+    const S = (function () {
+      const SECURITY_LIMITS = { MAX_PERSONAS: 500, MAX_STRING_LENGTH: 100, MAX_JSON_SIZE: 4 * 1024 * 1024, SCHEMA_VERSION: 1 };
+      const REGEX_FECHA = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+
+      function sanitizeString(str, maxLength = SECURITY_LIMITS.MAX_STRING_LENGTH) {
+        if (typeof str !== 'string') return '';
+        return str.replace(/[<>"'`]/g, '').replace(/javascript:/gi, '').replace(/data:/gi, '').replace(/vbscript:/gi, '').replace(/on\w+\s*=/gi, '').replace(/[\x00-\x1F\x7F]/g, '').trim().substring(0, maxLength);
+      }
+
+      function validarFechaSegura(f) {
+        if (!f || !REGEX_FECHA.test(f)) return false;
+        try {
+          const [y, m, d] = f.split('-').map(Number);
+          const fecha = new Date(y, m - 1, d);
+          if (fecha.getFullYear() !== y || fecha.getMonth() !== m - 1 || fecha.getDate() !== d) return false;
+          const ahora = new Date();
+          const hace20 = new Date(ahora.getFullYear() - 20, 0, 1);
+          const en10 = new Date(ahora.getFullYear() + 10, 11, 31);
+          return fecha >= hace20 && fecha <= en10 && !isNaN(fecha.getTime());
+        } catch (e) { return false; }
+      }
+
+      async function calcularHashSHA256(data) {
+        const encoder = new TextEncoder();
+        const dataBuffer = encoder.encode(JSON.stringify(data));
+        const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      function validarPersonaSegura(p) {
+        if (!p || typeof p !== 'object' || Array.isArray(p)) return false;
+        if (typeof p.name !== 'string' || p.name.trim().length === 0 || p.name.length > 100) return false;
+        const propPermitidas = ['id', 'name', 'area', 'years'];
+        if (Object.keys(p).some(k => !propPermitidas.includes(k))) return false;
+        if (p.area !== undefined && !Array.isArray(p.area) && typeof p.area !== 'string') return false;
+        if (p.years !== undefined) {
+          if (typeof p.years !== 'object' || Array.isArray(p.years)) return false;
+          for (const [yr, yCfg] of Object.entries(p.years)) {
+            if (!/^\d{4}$/.test(yr)) return false;
+            if (!yCfg || typeof yCfg !== 'object') return false;
+            const yProps = ['summer', 'winter', 'unlimited', 'sStart', 'sEnd'];
+            if (Object.keys(yCfg).some(k => !yProps.includes(k))) return false;
+            if (yCfg.summer !== undefined && (!Number.isFinite(yCfg.summer) || yCfg.summer < 0 || yCfg.summer > 365)) return false;
+            if (yCfg.winter !== undefined && (!Number.isFinite(yCfg.winter) || yCfg.winter < 0 || yCfg.winter > 365)) return false;
+            if (yCfg.unlimited !== undefined && typeof yCfg.unlimited !== 'boolean') return false;
+            if (yCfg.sStart !== undefined && (!Number.isFinite(yCfg.sStart) || yCfg.sStart < 0 || yCfg.sStart > 11)) return false;
+            if (yCfg.sEnd !== undefined && (!Number.isFinite(yCfg.sEnd) || yCfg.sEnd < 0 || yCfg.sEnd > 11)) return false;
+          }
+        }
+        return true;
+      }
+
+      function validarVacationKey(key) {
+        if (typeof key !== 'string' || key.length > 60) return false;
+        const partes = key.split('-');
+        if (partes.length < 4) return false;
+        const fecha = partes.slice(-3).join('-');
+        return REGEX_FECHA.test(fecha);
+      }
+
+      function fechaLocalISO() {
+        const d = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      }
+
+      function escapeHTML(str) {
+        if (typeof str !== 'string') return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+      return { SECURITY_LIMITS, sanitizeString, escapeHTML, validarFechaSegura, calcularHashSHA256, validarPersonaSegura, validarVacationKey, fechaLocalISO };
+    })();
+  </script>
+  <script>
+    // --- AREAS MODULE ---
+    const Areas = (function () {
+      const LS_KEY = 'licencias_areas_v1';
+      let _areas = [];
+
+      function cargar() {
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) _areas = parsed.map(a => S.sanitizeString(String(a), 60)).filter(a => a.length > 0);
+          }
+        } catch (e) { _areas = []; }
+      }
+
+      function persistir() {
+        try { localStorage.setItem(LS_KEY, JSON.stringify(_areas)); } catch (e) { }
+      }
+
+      function getAll() { return [..._areas]; }
+
+      function add() {
+        const input = document.getElementById('area-name-input');
+        const name = S.sanitizeString(input.value.trim(), 60);
+        if (!name) return UI.toast('Ingresá un nombre de área', 'info');
+        if (_areas.some(a => a.toLowerCase() === name.toLowerCase())) return UI.toast('Esa área ya existe', 'info');
+        if (_areas.length >= 100) return UI.toast('Límite de 100 Areas alcanzado', 'error');
+        _areas.push(name);
+        persistir();
+        input.value = '';
+        renderList();
+        _refreshAreaSelects();
+        UI.toast(`✓ Área "${name}" agregada`, 'success');
+      }
+
+      function remove(name) {
+        _areas = _areas.filter(a => a !== name);
+        persistir();
+        // Limpiar el área de todas las personas que la tenían asignada
+        [...Data.people()].sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })).forEach(p => {
+          if (!Array.isArray(p.area)) return;
+          p.area = p.area.filter(a => a !== name);
+          if (p.area.length === 0) delete p.area;
+        });
+        Data.notifyChange();
+        Gantt.render();
+        renderList();
+        _refreshAreaSelects();
+        UI.toast(`✓ Área "${name}" eliminada`, 'success');
+      }
+
+      function renderList() {
+        const list = document.getElementById('areas-list');
+        if (!list) return;
+        if (_areas.length === 0) {
+          list.innerHTML = `<div style="color:var(--text-muted);font-size:0.875rem;padding:0.5rem 0;">No hay Areas definidas.</div>`;
+          return;
+        }
+        list.innerHTML = [..._areas].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' })).map(a =>
+          `<div class="area-management-item"><span>${a}</span><button class="btn-remove-area" onclick="Areas.remove('${a.replace(/'/g, "\\'")}')" title="Eliminar">✕</button></div>`
+        ).join('');
+      }
+
+      // --- COMBOBOX STATE ---
+      const _comboState = {}; // { 'p-area': { selected: [], highlighted: -1 }, ... }
+
+      function _comboGetState(prefix) {
+        if (!_comboState[prefix]) _comboState[prefix] = { selected: [], highlighted: -1 };
+        return _comboState[prefix];
+      }
+
+      function _comboRenderChips(prefix) {
+        const chips = document.getElementById(prefix + '-chips');
+        if (!chips) return;
+        const state = _comboGetState(prefix);
+        chips.innerHTML = state.selected.map(a =>
+          `<span class="area-tag">${a}<button class="area-tag-remove" onclick="Areas.comboRemove('${prefix}','${a.replace(/'/g, "\\'")}')">✕</button></span>`
+        ).join('');
+      }
+
+      function _comboRenderDropdown(prefix, filterVal) {
+        const dropdown = document.getElementById(prefix + '-dropdown');
+        if (!dropdown) return;
+        const state = _comboGetState(prefix);
+        const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const fv = norm(filterVal || '');
+        const sorted = [..._areas].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+        const filtered = fv ? sorted.filter(a => norm(a).includes(fv)) : sorted;
+        if (!filtered.length) {
+          dropdown.innerHTML = `<div class="area-combobox-empty">Sin resultados</div>`;
+          state.highlighted = -1;
+          return;
+        }
+        dropdown.innerHTML = filtered.map((a, i) => {
+          const isSel = state.selected.includes(a);
+          return `<div class="area-combobox-option${isSel ? ' already-selected' : ''}" data-area="${a}" data-idx="${i}"
+            onmousedown="event.preventDefault();Areas.comboSelect('${prefix}','${a.replace(/'/g, "\\'")}')">
+            ${a}
+          </div>`;
+        }).join('');
+        state.highlighted = -1;
+      }
+
+      function comboOpen(prefix) {
+        const dropdown = document.getElementById(prefix + '-dropdown');
+        if (!dropdown) return;
+        const input = document.getElementById(prefix + '-input');
+        _comboRenderDropdown(prefix, input ? input.value : '');
+        dropdown.classList.add('open');
+      }
+
+      function comboFilter(prefix) {
+        const input = document.getElementById(prefix + '-input');
+        _comboRenderDropdown(prefix, input ? input.value : '');
+        const dropdown = document.getElementById(prefix + '-dropdown');
+        if (dropdown) dropdown.classList.add('open');
+      }
+
+      function comboSelect(prefix, area) {
+        const state = _comboGetState(prefix);
+        if (!state.selected.includes(area)) {
+          state.selected.push(area);
+          _comboRenderChips(prefix);
+        }
+        const input = document.getElementById(prefix + '-input');
+        if (input) { input.value = ''; input.focus(); }
+        _comboRenderDropdown(prefix, '');
+      }
+
+      function comboRemove(prefix, area) {
+        const state = _comboGetState(prefix);
+        state.selected = state.selected.filter(a => a !== area);
+        _comboRenderChips(prefix);
+      }
+
+      function comboAdd(prefix) {
+        // Agrega el área resaltada o el texto exacto si coincide
+        const state = _comboGetState(prefix);
+        const input = document.getElementById(prefix + '-input');
+        const val = input ? input.value.trim() : '';
+        const dropdown = document.getElementById(prefix + '-dropdown');
+        const opts = dropdown ? [...dropdown.querySelectorAll('.area-combobox-option')] : [];
+        let target = null;
+        if (state.highlighted >= 0 && opts[state.highlighted]) {
+          target = opts[state.highlighted].dataset.area;
+        } else if (val) {
+          const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+          target = _areas.find(a => norm(a) === norm(val)) || (opts[0] ? opts[0].dataset.area : null);
+        } else if (opts.length === 1) {
+          target = opts[0].dataset.area;
+        }
+        if (target) comboSelect(prefix, target);
+      }
+
+      function comboKey(e, prefix) {
+        const dropdown = document.getElementById(prefix + '-dropdown');
+        const state = _comboGetState(prefix);
+        if (!dropdown || !dropdown.classList.contains('open')) { if (e.key === 'ArrowDown') comboOpen(prefix); return; }
+        const opts = [...dropdown.querySelectorAll('.area-combobox-option')];
+        if (e.key === 'ArrowDown') { e.preventDefault(); state.highlighted = Math.min(state.highlighted + 1, opts.length - 1); _comboHighlight(dropdown, opts, state.highlighted); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); state.highlighted = Math.max(state.highlighted - 1, 0); _comboHighlight(dropdown, opts, state.highlighted); }
+        else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); comboAdd(prefix); }
+        else if (e.key === 'Escape') { e.stopPropagation(); dropdown.classList.remove('open'); document.activeElement?.blur(); }
+      }
+
+      function _comboHighlight(dropdown, opts, idx) {
+        opts.forEach((o, i) => o.classList.toggle('highlighted', i === idx));
+        if (opts[idx]) opts[idx].scrollIntoView({ block: 'nearest' });
+      }
+
+      function comboClose(prefix) {
+        const dropdown = document.getElementById(prefix + '-dropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+
+      function getSelected(prefix) {
+        return [...(_comboGetState(prefix).selected)];
+      }
+
+      function populateSelect(prefix, selectedAreas) {
+        const arr = Array.isArray(selectedAreas) ? selectedAreas : (selectedAreas ? [selectedAreas] : []);
+        const state = _comboGetState(prefix);
+        state.selected = arr.filter(a => a);
+        state.highlighted = -1;
+        _comboRenderChips(prefix);
+        const input = document.getElementById(prefix + '-input');
+        if (input) input.value = '';
+        const dropdown = document.getElementById(prefix + '-dropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+
+      function _refreshAreaSelects() {
+        ['p-area', 'ep-area'].forEach(prefix => {
+          const state = _comboGetState(prefix);
+          // Quitar de selected las áreas que ya no existen
+          state.selected = state.selected.filter(a => _areas.includes(a));
+          _comboRenderChips(prefix);
+        });
+      }
+
+      function importAll(arr) {
+        if (!Array.isArray(arr)) return;
+        _areas = arr.map(a => S.sanitizeString(String(a), 60)).filter(a => a.length > 0).slice(0, 100);
+        persistir();
+      }
+
+      return { cargar, getAll, add, remove, renderList, populateSelect, getSelected, comboOpen, comboFilter, comboSelect, comboRemove, comboAdd, comboKey, comboClose, importAll, refresh: _refreshAreaSelects };
+    })();
+  </script>
+  <script>
+    // --- FILE MODULE ---
+    const FileIO = (function () {
+      let isDirty = false;
+      function markDirty(val) { isDirty = val; }
+      function createNew() {
+        Data.loadFromObj({ people: [], vacations: {}, config: { defSummer: 30, defWinter: 15, sStart: 11, sEnd: 2 } });
+        markDirty(false);
+      }
+      return { markDirty, createNew };
+    })();
+
+    // --- DATA MODULE ---
+    const Data = (function () {
+      let people = [], vacations = {}, config = { defSummer: 30, defWinter: 15, sStart: 11, sEnd: 2, scrollSpeed: 3 };
+      const LS_KEY = 'licencias_data_v1';
+
+      function persistir() {
+        try { localStorage.setItem(LS_KEY, JSON.stringify({ people, vacations, config })); } catch (e) { console.warn('localStorage no disponible:', e); }
+      }
+
+      function loadFromObj(db) {
+        people = db.people || [];
+        vacations = db.vacations || {};
+        config = { ...{ defSummer: 30, defWinter: 15, sStart: 11, sEnd: 2, scrollSpeed: 3 }, ...db.config };
+        Gantt.render();
+      }
+
+      let _loaded = false;
+
+      function cargarDesdeLocalStorage() {
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if (!raw) return false;
+          const db = JSON.parse(raw);
+          if (!Array.isArray(db.people)) return false;
+          loadFromObj(db);
+          _loaded = true;
+          return true;
+        } catch (e) { return false; }
+      }
+
+      function notifyChange() { if (!_loaded) return; FileIO.markDirty(true); persistir(); GistSync.subirAuto(); }
+
+      function savePerson() {
+        const isEdit = document.getElementById('modal-edit-person').classList.contains('show');
+        const editId = document.getElementById('modal-edit-person')?.dataset.id;
+
+        if (isEdit) {
+          const name = S.sanitizeString(document.getElementById('ep-name').value.trim(), 100);
+          if (!name) return UI.toast("Nombre requerido", "info");
+          const p = people.find(x => x.id == editId);
+          if (!p) return;
+
+          // Mismas validaciones que al agregar
+          const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+          const tokenize = s => norm(s).split(/\s+/).filter(t => t.length > 0);
+          const tokens = tokenize(name);
+          if (tokens.length < 2) return UI.toast(`"${name}": ingresá al menos nombre y apellido`, "error");
+          const newSet = new Set(tokens);
+          const collision = people.find(x => {
+            if (x.id == editId) return false; // ignorar la persona que se está editando
+            const exSet = new Set(tokenize(x.name));
+            return [...newSet].every(t => exSet.has(t)) || [...exSet].every(t => newSet.has(t));
+          });
+          if (collision) return UI.toast(`"${name}": similar a "${collision.name}"`, "error");
+
+          const year = parseInt(document.getElementById('ep-year-select').value);
+          const useCustomLimits = document.getElementById('ep-custom-limits').classList.contains('active');
+          const useCustomSeason = document.getElementById('ep-custom-season').classList.contains('active');
+          const areas = Areas.getSelected('ep-area').map(a => S.sanitizeString(a, 60)).filter(a => a);
+
+          // Construir config del año
+          const prevYearCfg = (p.years && p.years[year]) ? { ...p.years[year] } : undefined;
+          let newYearCfg = undefined;
+          if (useCustomLimits || useCustomSeason) {
+            newYearCfg = {};
+            if (useCustomLimits) {
+              newYearCfg.summer = parseInt(document.getElementById('ep-summer').value) || 0;
+              newYearCfg.winter = parseInt(document.getElementById('ep-winter').value) || 0;
+              newYearCfg.unlimited = document.getElementById('ep-unlimited').classList.contains('active');
+            }
+            if (useCustomSeason) {
+              newYearCfg.sStart = parseInt(document.getElementById('ep-sStart').value);
+              newYearCfg.sEnd = parseInt(document.getElementById('ep-sEnd').value);
+            }
+          }
+
+          const prevAreas = Array.isArray(p.area) ? p.area : (p.area ? [p.area] : []);
+          const yearCfgChanged = JSON.stringify(prevYearCfg) !== JSON.stringify(newYearCfg);
+          const changed = p.name !== name || JSON.stringify(prevAreas.sort()) !== JSON.stringify([...areas].sort()) || yearCfgChanged;
+          if (!changed) { UI.closeModals(); UI.toast("Sin cambios", "info"); return; }
+
+          Historial.empujar(`Editar persona "${p.name}"`);
+          p.name = name;
+          if (areas.length) p.area = areas; else delete p.area;
+          if (!p.years) p.years = {};
+          if (newYearCfg) p.years[year] = newYearCfg;
+          else delete p.years[year];
+          if (Object.keys(p.years).length === 0) delete p.years;
+
+          notifyChange(); UI.closeModals(); Gantt.render();
+          UI.toast(yearCfgChanged ? "✓ Cambios guardados · Configuración de año actualizada" : "✓ Cambios guardados", "success");
+        } else {
+          const rawName = document.getElementById('p-name').value;
+          const areas = Areas.getSelected('p-area').map(a => S.sanitizeString(a, 60)).filter(a => a);
+          const names = rawName.split(',').map(n => n.trim()).filter(n => n.length > 0);
+          if (!names.length) return UI.toast("Falta el nombre", "info");
+
+          // Normaliza igual que la búsqueda: sin tildes, minúsculas
+          const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+          const tokenize = s => norm(s).split(/\s+/).filter(t => t.length > 0);
+          const existingTokenSets = people.map(p => new Set(tokenize(p.name)));
+
+          const agregados = [], rechazados = [];
+          for (const name of names) {
+            const tokens = tokenize(name);
+            // Mínimo 2 tokens: nombre + apellido
+            if (tokens.length < 2) {
+              rechazados.push({ name, reason: 'ingresá al menos nombre y apellido' });
+              continue;
+            }
+            // Duplicado inteligente: denegado si los tokens de uno son subconjunto del otro
+            const newSet = new Set(tokens);
+            const collision = people.find((p, i) => {
+              const exSet = existingTokenSets[i];
+              return [...newSet].every(t => exSet.has(t)) || [...exSet].every(t => newSet.has(t));
+            });
+            if (collision) {
+              rechazados.push({ name, reason: `similar a "${collision.name}"` });
+              continue;
+            }
+            agregados.push(name);
+          }
+
+          rechazados.forEach(r => UI.toast(`✗ "${r.name}": ${r.reason}`, 'error'));
+          if (agregados.length) {
+            Historial.empujar(agregados.length > 1 ? `Agregar ${agregados.length} personas` : `Agregar "${agregados[0]}"`);
+            agregados.forEach((name, i) => {
+              const persona = { id: Date.now() + i, name, summer: config.defSummer, winter: config.defWinter, unlimited: false };
+              if (areas.length) persona.area = areas;
+              people.push(persona);
+            });
+            notifyChange(); UI.closeModals(); Gantt.render();
+            UI.toast(agregados.length > 1 ? `✓ ${agregados.length} personas agregadas` : `✓ ${agregados[0]} agregado`, "success");
+          }
+        }
+      }
+
+      function deletePerson() {
+        const id = document.getElementById('modal-edit-person').dataset.id;
+        const p = people.find(x => x.id == id);
+        if (!p) return;
+        UI.showConfirm(
+          'Eliminar persona',
+          `¿Eliminar a ${p.name}? Esta acción no se puede deshacer.`,
+          () => {
+            Historial.empujar(`Eliminar "${p.name}"`);
+            people = people.filter(x => x.id != id);
+            notifyChange(); UI.closeModals(); Gantt.render();
+            UI.toast(`✓ ${p.name} eliminado`, "success");
+          }
+        );
+      }
+
+      function saveConfig() {
+        Historial.empujar('Guardar configuración');
+        config.defSummer = parseInt(document.getElementById('conf-summer').value);
+        config.defWinter = parseInt(document.getElementById('conf-winter').value);
+        config.sStart = parseInt(document.getElementById('conf-s-start').value);
+        config.sEnd = parseInt(document.getElementById('conf-s-end').value);
+        const spd = parseInt(document.getElementById('conf-scroll-speed').value);
+        config.scrollSpeed = (Number.isFinite(spd) && spd >= 1 && spd <= 10) ? spd : 3;
+        notifyChange(); UI.closeModals(); Gantt.render();
+        UI.toast("✓ Configuración guardada", "success");
+      }
+
+      function setVacation(pid, date, val) {
+        const key = `${pid}-${date}`;
+        if (val) vacations[key] = true; else delete vacations[key];
+      }
+
+      function isVacation(pid, d) { return vacations[`${pid}-${d}`]; }
+
+      function getYearConfig(p, year) {
+        // Devuelve la config del año dado, o defaults globales si no existe
+        const y = p.years && p.years[year];
+        return {
+          summer: y && y.summer !== undefined ? y.summer : config.defSummer,
+          winter: y && y.winter !== undefined ? y.winter : config.defWinter,
+          unlimited: y && y.unlimited !== undefined ? y.unlimited : false,
+          sStart: y && y.sStart !== undefined ? y.sStart : config.sStart,
+          sEnd: y && y.sEnd !== undefined ? y.sEnd : config.sEnd,
+        };
+      }
+
+      function getLimits(p, year) {
+        return getYearConfig(p, year ?? new Date().getFullYear());
+      }
+
+      function getStatus(p, year) {
+        const today = fechaHoyLocal();
+        if (vacations[`${p.id}-${today}`]) return { text: "En curso", cls: "curso" };
+        const lim = getYearConfig(p, year);
+        if (lim.unlimited) return { text: "Libre", cls: "libre" };
+        let taken_s = 0, taken_w = 0;
+        Object.keys(vacations).forEach(k => {
+          if (!k.startsWith(p.id + '-')) return;
+          const datePart = k.split('-').slice(1).join('-');
+          if (parseInt(datePart.split('-')[0]) !== year) return;
+          if (datePart <= today) {
+            if (getSeason(datePart, p) === 'summer') taken_s++; else taken_w++;
+          }
+        });
+        const balance = (lim.summer + lim.winter) - (taken_s + taken_w);
+        return (balance > 0) ? { text: "Pendiente", cls: "pendiente" } : { text: "Completa", cls: "completa" };
+      }
+
+      function getSeason(dateStr, person) {
+        const month = parseInt(dateStr.split('-')[1]) - 1;
+        const year = parseInt(dateStr.split('-')[0]);
+        const yCfg = person ? getYearConfig(person, year) : null;
+        const start = yCfg ? yCfg.sStart : config.sStart;
+        const end = yCfg ? yCfg.sEnd : config.sEnd;
+        if (start < end) { return (month >= start && month < end) ? 'summer' : 'winter'; }
+        else { return (month >= start || month < end) ? 'summer' : 'winter'; }
+      }
+
+      function getUsedCounts(p, year) {
+        let sUsed = 0, wUsed = 0;
+        Object.keys(vacations).forEach(k => {
+          if (k.startsWith(p.id + '-')) {
+            const datePart = k.split('-').slice(1).join('-');
+            if (year !== undefined) {
+              const keyYear = parseInt(datePart.split('-')[0]);
+              if (keyYear !== year) return;
+            }
+            if (getSeason(datePart, p) === 'summer') sUsed++; else wUsed++;
+          }
+        });
+        return { s: sUsed, w: wUsed };
+      }
+
+      function getRealTimeStats(p, year) {
+        const lim = getYearConfig(p, year);
+        if (lim.unlimited) return { s: Infinity, w: Infinity };
+        const used = getUsedCounts(p, year);
+        return { s: lim.summer - used.s, w: lim.winter - used.w };
+      }
+
+      async function exportData() {
+        try {
+          const peopleClean = people.map(p => {
+            const obj = { id: p.id, name: p.name };
+            if (p.area !== undefined) obj.area = p.area;
+            if (p.years && Object.keys(p.years).length) obj.years = p.years;
+            return obj;
+          });
+          const payload = { people: peopleClean, vacations, config };
+          const data = {
+            people: peopleClean, vacations, config, holidays: Holidays.getAll(), areas: Areas.getAll(), fecha: S.fechaLocalISO(),
+            version: S.SECURITY_LIMITS.SCHEMA_VERSION, hash: await S.calcularHashSHA256(payload), timestamp: Date.now(),
+          };
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url; a.download = `Licencias_backup_${fechaHoyLocal()}.json`;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+          UI.toast(" Backup exportado", "success");
+        } catch (e) { console.error(e); UI.toast(" Error al exportar", "error"); }
+      }
+
+      function importData(parsedData, mode) {
+        const data = parsedData;
+        const peopleImportadas = data.people.filter(p => S.validarPersonaSegura(p)).map(p => {
+          const persona = {
+            id: (typeof p.id === 'number' || typeof p.id === 'string') ? p.id : Date.now(),
+            name: S.sanitizeString(p.name, 100),
+          };
+          if (p.area !== undefined) {
+            const rawArea = Array.isArray(p.area) ? p.area : [p.area];
+            const areasClean = rawArea.map(a => S.sanitizeString(String(a), 60)).filter(a => a);
+            if (areasClean.length) persona.area = areasClean;
+          }
+          if (p.years && typeof p.years === 'object') {
+            persona.years = {};
+            for (const [yr, yCfg] of Object.entries(p.years)) {
+              if (!/^\d{4}$/.test(yr) || !yCfg) continue;
+              const yClean = {};
+              if (Number.isFinite(yCfg.summer)) yClean.summer = Math.max(0, Math.min(365, yCfg.summer));
+              if (Number.isFinite(yCfg.winter)) yClean.winter = Math.max(0, Math.min(365, yCfg.winter));
+              if (typeof yCfg.unlimited === 'boolean') yClean.unlimited = yCfg.unlimited;
+              if (Number.isFinite(yCfg.sStart) && yCfg.sStart >= 0 && yCfg.sStart <= 11) yClean.sStart = yCfg.sStart;
+              if (Number.isFinite(yCfg.sEnd) && yCfg.sEnd >= 0 && yCfg.sEnd <= 11) yClean.sEnd = yCfg.sEnd;
+              if (Object.keys(yClean).length) persona.years[yr] = yClean;
+            }
+            if (!Object.keys(persona.years).length) delete persona.years;
+          }
+          return persona;
+        });
+
+        if (peopleImportadas.length === 0 && data.people.length > 0) { UI.toast(" No se encontraron personas válidas", "error"); return; }
+
+        const vacationsImportadas = {};
+        if (data.vacations && typeof data.vacations === 'object' && !Array.isArray(data.vacations)) {
+          Object.keys(data.vacations).forEach(key => { if (S.validarVacationKey(key)) vacationsImportadas[key] = true; });
+        }
+
+        const configBase = { defSummer: 30, defWinter: 15, sStart: 11, sEnd: 2, scrollSpeed: 5 };
+        let configImportada = { ...configBase };
+        if (data.config && typeof data.config === 'object') {
+          const ds = parseInt(data.config.defSummer), dw = parseInt(data.config.defWinter);
+          const ss = parseInt(data.config.sStart), se = parseInt(data.config.sEnd), spd = parseInt(data.config.scrollSpeed);
+          if (Number.isFinite(ds) && ds >= 0 && ds <= 365) configImportada.defSummer = ds;
+          if (Number.isFinite(dw) && dw >= 0 && dw <= 365) configImportada.defWinter = dw;
+          if (Number.isFinite(ss) && ss >= 0 && ss <= 11) configImportada.sStart = ss;
+          if (Number.isFinite(se) && se >= 0 && se <= 11) configImportada.sEnd = se;
+          if (Number.isFinite(spd) && spd >= 1 && spd <= 10) configImportada.scrollSpeed = spd;
+        }
+
+        if (mode === 'merge') {
+          const existingIds = new Set(people.map(p => String(p.id)));
+          const nuevas = peopleImportadas.filter(p => !existingIds.has(String(p.id)));
+          people = [...people, ...nuevas];
+          Object.keys(vacationsImportadas).forEach(k => { vacations[k] = true; });
+          // Merge areas
+          if (data.areas && Array.isArray(data.areas)) {
+            const existingAreas = new Set(Areas.getAll().map(a => a.toLowerCase()));
+            const newAreas = data.areas.map(a => S.sanitizeString(String(a), 60)).filter(a => a && !existingAreas.has(a.toLowerCase()));
+            if (newAreas.length > 0) { Areas.importAll([...Areas.getAll(), ...newAreas]); Areas.refresh(); }
+          }
+          persistir(); Gantt.render(); FileIO.markDirty(true); UI.refreshYearSelector && UI.refreshYearSelector();
+          UI.toast(`✓ Combinado: ${nuevas.length} persona(s) nueva(s)`, "success");
+        } else {
+          loadFromObj({ people: peopleImportadas, vacations: vacationsImportadas, config: configImportada });
+          _loaded = true;
+          persistir();
+          if (data.holidays && typeof data.holidays === 'object') Holidays.importAll(data.holidays);
+          if (data.areas && Array.isArray(data.areas)) { Areas.importAll(data.areas); Areas.refresh(); }
+          FileIO.markDirty(true); UI.refreshYearSelector && UI.refreshYearSelector();
+          UI.toast(` Restaurado: ${peopleImportadas.length} persona(s)`, "success");
+        }
+        UI.closeModals();
+      }
+
+      function vacacionesDe(pid) {
+        return Object.keys(vacations).filter(k => k.startsWith(pid + '-')).map(k => k.split('-').slice(1).join('-'));
+      }
+
+      return { loadFromObj, notifyChange, setLoaded: () => { _loaded = true; }, people: () => people, config: () => config, vacations: () => vacations, isVacation, setVacation, getStatus, getRealTimeStats, getLimits, getYearConfig, getSeason, getUsedCounts, savePerson, deletePerson, saveConfig, exportData, importData, cargarDesdeLocalStorage, vacacionesDe };
+    })();
+
+    // --- GANTT MODULE (REFACTORIZADO A CSS GRID) ---
+
+    // ── Column mode registry (modular, extensible) ──────────────────────────
+    const COLUMN_MODES = [
+      {
+        id: 'remaining',
+        label: 'Por cursar',
+        headers: { summer: 'Verano', winter: 'Invierno' },
+        getStats(p, year, vacations, getUsedCounts, getYearConfig, getSeason, fechaHoy) {
+          const lim = getYearConfig(p, year);
+          if (lim.unlimited) return { s: Infinity, w: Infinity };
+          // Contar solo los días ya cursados (pasados)
+          let taken_s = 0, taken_w = 0;
+          Object.keys(vacations).forEach(k => {
+            if (!k.startsWith(p.id + '-')) return;
+            const datePart = k.split('-').slice(1).join('-');
+            if (parseInt(datePart.split('-')[0]) !== year) return;
+            if (datePart <= fechaHoy) {
+              if (getSeason(datePart, p) === 'summer') taken_s++; else taken_w++;
+            }
+          });
+          return { s: lim.summer - taken_s, w: lim.winter - taken_w };
+        },
+        colorize(val) { return (val !== Infinity && val <= 0) ? 'var(--c-red)' : 'inherit'; }
+      },
+      {
+        id: 'unassigned',
+        label: 'Por asignar',
+        headers: { summer: 'Verano', winter: 'Invierno' },
+        getStats(p, year, vacations, getUsedCounts, getYearConfig, getSeason, fechaHoy) {
+          const lim = getYearConfig(p, year);
+          if (lim.unlimited) return { s: Infinity, w: Infinity };
+          const used = getUsedCounts(p, year);
+          return { s: lim.summer - used.s, w: lim.winter - used.w };
+        },
+        colorize(val) { return (val !== Infinity && val <= 0) ? 'var(--c-red)' : 'inherit'; }
+      },
+      {
+        id: 'assigned',
+        label: 'Asignados',
+        headers: { summer: 'Verano', winter: 'Invierno' },
+        getStats(p, year, vacations, getUsedCounts, getYearConfig, getSeason, fechaHoy) {
+          const used = getUsedCounts(p, year);
+          return { s: used.s, w: used.w };
+        },
+        colorize(val) { return 'inherit'; }
+      },
+      {
+        id: 'taken',
+        label: 'Cursados',
+        headers: { summer: 'Verano', winter: 'Invierno' },
+        getStats(p, year, vacations, getUsedCounts, getYearConfig, getSeason, fechaHoy) {
+          let s = 0, w = 0;
+          Object.keys(vacations).forEach(k => {
+            if (!k.startsWith(p.id + '-')) return;
+            const datePart = k.split('-').slice(1).join('-');
+            if (parseInt(datePart.split('-')[0]) !== year) return;
+            if (datePart <= fechaHoy) {
+              if (getSeason(datePart, p) === 'summer') s++; else w++;
+            }
+          });
+          return { s, w };
+        },
+        colorize(val) { return 'inherit'; }
+      },
+    ];
+    let _colModeIdx = 0;
+    let _colModeDir = 1; // 1 = forward (right), -1 = backward (left)
+    let _animateCols = false;
+    let _colModeTimer = null;
+    const COL_MODE_INTERVAL = 15000; // 15 segundos
+
+    function _resetColModeTimer() {
+      if (_colModeTimer) clearInterval(_colModeTimer);
+      _colModeTimer = setInterval(() => cycleColumnMode(1), COL_MODE_INTERVAL);
+      // Reiniciar animación de la barra de progreso
+      const bar = document.getElementById('col-mode-progress');
+      if (bar) {
+        bar.style.animation = 'none';
+        bar.offsetWidth; // forzar reflow
+        bar.style.animation = `colModeCountdown ${COL_MODE_INTERVAL}ms linear forwards`;
+      }
+    }
+
+    function cycleColumnMode(dir = 1, manual = false) {
+      _colModeDir = dir;
+      _colModeIdx = (_colModeIdx + dir + COLUMN_MODES.length) % COLUMN_MODES.length;
+      _animateCols = true;
+      Gantt.refreshColumnMode();
+      _animateCols = false;
+      _resetColModeTimer();
+    }
+    function getColumnMode() { return COLUMN_MODES[_colModeIdx]; }
+    // ────────────────────────────────────────────────────────────────────────
+
+    const Gantt = (function () {
+      const gridContainer = document.getElementById('gantt-grid');
+      const containerScroll = document.getElementById('gantt-container');
+      let currentViewYear = new Date().getFullYear();
+      let dateRange = [], isDragging = false, dragStartValue = false, toastDebounce = 0;
+      let _dragPid = null, _dragPersonName = '', _dragVacSnapBefore = null;
+      let isPanoramic = false;
+      let _onContextMenuRow = null; // asignado desde DOMContentLoaded
+      const _unlockedIds = new Set(); // IDs de personas con edición habilitada
+
+      function _updateVisibleLicenses() {
+        const cRect = containerScroll.getBoundingClientRect();
+        document.querySelectorAll('.person-row').forEach(row => {
+          const cellName = row.querySelector('.person-cell');
+          if (!cellName) return;
+          const activeBars = row.querySelectorAll('.bar-segment.active');
+          let visible = false;
+          for (const bar of activeBars) {
+            const bRect = bar.getBoundingClientRect();
+            if (bRect.right > cRect.left && bRect.left < cRect.right) { visible = true; break; }
+          }
+          cellName.classList.toggle('has-visible-license', visible);
+        });
+      }
+      containerScroll.addEventListener('scroll', _updateVisibleLicenses, { passive: true });
+
+      // ÁRBITRO DE PRIORIDADES (Single Source of Truth)
+      const DAY_PRIORITY = { WORKDAY: 0, WEEKEND: 1, HOLIDAY: 2, TODAY: 3 };
+
+      function getDayType(dateObj, dateStr) {
+        const todayStr = fechaHoyLocal();
+        let type = 'workday';
+        let maxPriority = DAY_PRIORITY.WORKDAY;
+
+        const isWknd = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+        if (isWknd) { type = 'weekend'; maxPriority = DAY_PRIORITY.WEEKEND; }
+        if (Holidays.isHoliday(dateStr) && DAY_PRIORITY.HOLIDAY > maxPriority) { type = 'holiday'; maxPriority = DAY_PRIORITY.HOLIDAY; }
+        if (dateStr === todayStr && DAY_PRIORITY.TODAY > maxPriority) { type = 'today'; }
+
+        return type;
+      }
+
+      function generateDateRange() {
+        dateRange = [];
+        const start = new Date(currentViewYear, 0, 1);
+        const end = new Date(currentViewYear, 11, 31);
+        let curr = new Date(start);
+        while (curr <= end) { dateRange.push(new Date(curr)); curr.setDate(curr.getDate() + 1); }
+      }
+
+      function changeYear(y, afterRender) {
+        containerScroll.style.opacity = '0';
+        setTimeout(() => {
+          currentViewYear = parseInt(y);
+          render();
+          containerScroll.style.opacity = '1';
+          if (afterRender) setTimeout(afterRender, 50);
+        }, 180);
+      }
+
+      function render() {
+        const wasPanoramic = isPanoramic;
+        generateDateRange();
+        gridContainer.innerHTML = '';
+        if (wasPanoramic) gridContainer.classList.add('panoramic-mode');
+
+        // Inyectamos dinámicamente cuántas columnas dibujar
+        gridContainer.style.setProperty('--days-count', dateRange.length);
+
+        // 1. Fila de Meses
+        const rowMonths = document.createElement('div');
+        rowMonths.className = 'gantt-row header-months';
+
+        const searchCorner = document.createElement('div');
+        searchCorner.className = 'gantt-cell sticky-left-header';
+        searchCorner.style.cssText = 'padding:0!important; border-bottom:1px solid var(--gantt-line);';
+        searchCorner.innerHTML = '<div class="search-wrapper"><div class="search-inner"><input type="text" id="search-filter" class="search-input" placeholder="Nombre, area..." oninput="Gantt.filterRows(this.value)"><button class="btn-clear-search" onclick="Gantt.clearFilter()" tabindex="-1">✕</button></div></div>';
+        rowMonths.appendChild(searchCorner);
+
+        let currentMonth = -1, colSpan = 0, lastCell = null;
+        let isFirstMonth = true;
+        dateRange.forEach(d => {
+          if (d.getMonth() !== currentMonth) {
+            if (lastCell) lastCell.style.gridColumn = `span ${colSpan}`;
+            currentMonth = d.getMonth(); colSpan = 1;
+
+            const cellMonth = document.createElement('div');
+            cellMonth.className = `gantt-cell month-header${!isFirstMonth ? ' month-start' : ''}`;
+            isFirstMonth = false;
+            const mName = d.toLocaleDateString('es-ES', { month: 'long' });
+            cellMonth.textContent = mName.charAt(0).toUpperCase() + mName.slice(1);
+            const monthFirstDate = d.toISOString().split('T')[0];
+            cellMonth.onclick = () => togglePanoramicMode(monthFirstDate);
+
+            rowMonths.appendChild(cellMonth);
+            lastCell = cellMonth;
+          } else { colSpan++; }
+        });
+        if (lastCell) lastCell.style.gridColumn = `span ${colSpan}`;
+
+        // Toggle de modo de columna: ocupa las 3 columnas derechas del grid (span 3)
+        const cellToggle = document.createElement('div');
+        cellToggle.className = 'gantt-cell sticky-right-header sticky-right col-status col-mode-toggle';
+        cellToggle.style.cssText = 'grid-column: span 3; width: auto; border-left: 1px solid var(--border);';
+        cellToggle.title = 'Cambiar vista de columnas';
+        const mode = getColumnMode();
+        const animClass = _animateCols ? 'anim-fade' : '';
+        cellToggle.innerHTML = `<div class="toggle-top-row"><span class="toggle-arrow" style="cursor:pointer;" onclick="event.stopPropagation();cycleColumnMode(-1, true)">◀</span><span class="toggle-label ${animClass}">${mode.label}</span><span class="toggle-arrow" style="cursor:pointer;" onclick="event.stopPropagation();cycleColumnMode(1, true)">▶</span></div><div class="col-mode-progress-wrap"><div class="col-mode-progress-bar" id="col-mode-progress"></div></div>`;
+        cellToggle.onclick = () => cycleColumnMode(1, true);
+        rowMonths.appendChild(cellToggle);
+        gridContainer.appendChild(rowMonths);
+
+        // 2. Fila de Días de la Semana
+        const rowWeekdays = document.createElement('div');
+        rowWeekdays.className = 'gantt-row header-weekdays';
+
+        const cornerWk = document.createElement('div');
+        cornerWk.className = 'gantt-cell sticky-left-header';
+        cornerWk.style.borderBottom = '1px solid var(--gantt-line)';
+        rowWeekdays.appendChild(cornerWk);
+
+        dateRange.forEach((d, i) => {
+          const cellD = document.createElement('div');
+          const dStrWd = d.toISOString().split('T')[0];
+          const dayType = getDayType(d, dStrWd);
+
+          cellD.className = `gantt-cell day-name-header type-${dayType}${d.getDate() === 1 && i > 0 ? ' month-start' : ''}`;
+          cellD.textContent = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '').toUpperCase();
+          rowWeekdays.appendChild(cellD);
+        });
+
+        ['col-summer', 'col-winter', 'col-status'].forEach(cls => {
+          const wkCell = document.createElement('div');
+          wkCell.className = 'gantt-cell sticky-right-header sticky-right ' + cls;
+          rowWeekdays.appendChild(wkCell);
+        });
+        gridContainer.appendChild(rowWeekdays);
+
+        // 3. Fila de Números de Día
+        const rowDays = document.createElement('div');
+        rowDays.className = 'gantt-row header-days';
+
+        const cornerNum = document.createElement('div');
+        cornerNum.className = 'gantt-cell sticky-left-header';
+        cornerNum.style.cssText = 'text-align:left; padding-left:15px !important; border-bottom:1px solid var(--gantt-line); display:flex; align-items:center; justify-content:space-between; padding-right:8px !important;';
+        cornerNum.innerHTML = '<span>PERSONAL</span><button onclick="UI.openPersonModal(true)" title="Nueva persona" style="background:none;border:none;cursor:pointer;padding-right:0.5rem;display:flex;align-items:center;color:var(--text-muted);transition:color 0.2s;" onmouseover="this.style.color=\'var(--hover)\'" onmouseout="this.style.color=\'var(--text-muted)\'"><svg style="width:1rem;height:1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-user-plus"/></svg></button>';
+        rowDays.appendChild(cornerNum);
+
+        dateRange.forEach((d, i) => {
+          const cellN = document.createElement('div');
+          const dStrDn = d.toISOString().split('T')[0];
+          const dayType = getDayType(d, dStrDn);
+
+          cellN.className = `gantt-cell day-num-header type-${dayType}${d.getDate() === 1 && i > 0 ? ' month-start' : ''}`;
+          cellN.textContent = d.getDate();
+          rowDays.appendChild(cellN);
+        });
+
+        {
+          const m = getColumnMode();
+          rowDays.innerHTML += `<div class="gantt-cell sticky-right-header sticky-right col-summer">${m.headers.summer}</div><div class="gantt-cell sticky-right-header sticky-right col-winter">${m.headers.winter}</div><div class="gantt-cell sticky-right-header sticky-right col-status">Estado</div>`;
+        }
+        gridContainer.appendChild(rowDays);
+
+        // 4. Filas de Personas (Data Rows)
+        [...Data.people()].sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })).forEach(p => {
+          const areas = Array.isArray(p.area) ? p.area : (p.area ? [p.area] : []);
+          const rowP = document.createElement('div');
+          rowP.dataset.name = p.name.toLowerCase();
+          if (areas.length) {
+            rowP.dataset.area = areas.map(a => a.toLowerCase()).join(' ');
+            rowP.dataset.areaLabel = areas.join(', ');
+          }
+          rowP.className = "gantt-row person-row";
+
+          const cellName = document.createElement('div');
+          cellName.className = 'gantt-cell sticky-left person-cell';
+          const statusDot = document.createElement('span');
+          statusDot.className = 'status-dot';
+          cellName.appendChild(statusDot);
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'person-name-span';
+          nameSpan.textContent = p.name;
+          nameSpan.title = areas.length ? `${p.name} · ${areas.join(', ')}` : p.name;
+          nameSpan.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;display:block;';
+          cellName.appendChild(nameSpan);
+
+          cellName.onclick = (e) => { if (_onContextMenuRow) _onContextMenuRow(rowP); };
+          cellName.oncontextmenu = (e) => { e.preventDefault(); CtxMenu.open(e, p.id, rowP); };
+          rowP.appendChild(cellName);
+
+          dateRange.forEach((d, i) => {
+            const cellDay = document.createElement('div');
+            const dStr = d.toISOString().split('T')[0];
+            const dayType = getDayType(d, dStr);
+
+            // Importante: usamos nuestra clase base gantt-cell pero con la variante day-cell (display block en vez de flex)
+            cellDay.className = `gantt-cell day-cell type-${dayType}${d.getDate() === 1 && i > 0 ? ' month-start' : ''}`;
+
+            const bar = document.createElement('div');
+            bar.className = 'bar-segment';
+            bar.dataset.date = dStr;
+            bar.addEventListener('mouseenter', (e) => {
+              if (!Data.isVacation(p.id, dStr)) return;
+              const season = Data.getSeason(dStr, p);
+              const tt = document.getElementById('bar-tooltip');
+              tt.querySelector('.tt-name').textContent = p.name;
+              // Calcular rango continuo de la barra
+              const allBars = [...rowP.querySelectorAll('.bar-segment')];
+              const thisIdx = allBars.indexOf(bar);
+              let rangeStart = thisIdx, rangeEnd = thisIdx;
+              while (rangeStart > 0 && Data.isVacation(p.id, allBars[rangeStart - 1].dataset.date)) rangeStart--;
+              while (rangeEnd < allBars.length - 1 && Data.isVacation(p.id, allBars[rangeEnd + 1].dataset.date)) rangeEnd++;
+              const fmtDate = iso => { const [, m, d] = iso.split('-'); return `${parseInt(d)}/${parseInt(m)}`; };
+              const startDate = allBars[rangeStart].dataset.date;
+              const endDate = allBars[rangeEnd].dataset.date;
+              tt.querySelector('.tt-range').textContent = startDate === endDate ? fmtDate(startDate) : `Del ${fmtDate(startDate)} al ${fmtDate(endDate)}`;
+              const seasonEl = tt.querySelector('.tt-season');
+              seasonEl.textContent = season === 'summer' ? '☀ Verano' : '❄ Invierno';
+              seasonEl.className = `tt-season ${season}`;
+              tt.classList.add('visible');
+            });
+            bar.addEventListener('mouseleave', () => {
+              document.getElementById('bar-tooltip').classList.remove('visible');
+            });
+            bar.addEventListener('mousemove', (e) => {
+              const tt = document.getElementById('bar-tooltip');
+              const offset = 14;
+              let x = e.clientX + offset, y = e.clientY + offset;
+              if (x + tt.offsetWidth > window.innerWidth) x = e.clientX - tt.offsetWidth - offset;
+              if (y + tt.offsetHeight > window.innerHeight) y = e.clientY - tt.offsetHeight - offset;
+              tt.style.left = x + 'px';
+              tt.style.top = y + 'px';
+            });
+            cellDay.appendChild(bar);
+
+            cellDay.onmousedown = (e) => {
+              if (e.button !== 0) return;
+              if (isPanoramic) { e.preventDefault(); togglePanoramicMode(dStr); return; }
+              isDragging = true; dragStartValue = !Data.isVacation(p.id, dStr);
+              // Capturamos snapshot y pid ANTES de mutar — empujamos en mouseup solo si hubo cambios reales
+              _dragPid = p.id;
+              _dragPersonName = p.name;
+              _dragVacSnapBefore = { ...Data.vacations() };
+              handleInteraction(p.id, dStr, bar, rowP, p);
+            };
+            cellDay.onmouseover = () => { if (isDragging && !isPanoramic) handleInteraction(p.id, dStr, bar, rowP, p); };
+            rowP.appendChild(cellDay);
+          });
+
+          const tdSummer = document.createElement('div'); tdSummer.className = 'gantt-cell sticky-right col-summer';
+          const tdWinter = document.createElement('div'); tdWinter.className = 'gantt-cell sticky-right col-winter';
+          const tdStatus = document.createElement('div'); tdStatus.className = 'gantt-cell sticky-right col-status';
+
+          rowP.appendChild(tdSummer); rowP.appendChild(tdWinter); rowP.appendChild(tdStatus);
+          refreshRowVisuals(rowP, p);
+          gridContainer.appendChild(rowP);
+        });
+
+        containerScroll.style.maxHeight = '';
+        _updateLockUI();
+        _updateVisibleLicenses();
+      }
+
+      function filterRows(val) {
+        const normalize = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const term = normalize(val);
+        const tokens = term.split(/\s+/).filter(t => t.length > 0);
+        const allTokensMatch = (target) => tokens.every(t => target.includes(t));
+        const rows = document.querySelectorAll('.person-row');
+
+        // Encontrar áreas individuales que coincidan con el término
+        let matchingAreas = new Set();
+        if (tokens.length) {
+          rows.forEach(row => {
+            const areaLabel = row.dataset.areaLabel || '';
+            areaLabel.split(',').map(a => a.trim()).filter(a => a).forEach(a => {
+              if (allTokensMatch(normalize(a))) matchingAreas.add(a.toLowerCase());
+            });
+          });
+        }
+
+        rows.forEach(row => {
+          const nameMatch = tokens.length ? allTokensMatch(normalize(row.dataset.name)) : true;
+          const areaVal = row.dataset.area || '';
+          const areaDirectMatch = areaVal && allTokensMatch(normalize(areaVal));
+          // peer: comparte al menos una área con las que matchearon
+          const rowAreas = (row.dataset.areaLabel || '').split(',').map(a => a.trim().toLowerCase()).filter(a => a);
+          const areaPeerMatch = rowAreas.some(a => matchingAreas.has(a));
+          const matches = !tokens.length || nameMatch || areaDirectMatch || areaPeerMatch;
+          if (matches) {
+            row.style.display = '';
+            requestAnimationFrame(() => row.classList.remove('filtered-out'));
+          } else {
+            row.classList.add('filtered-out');
+            setTimeout(() => { if (row.classList.contains('filtered-out')) row.style.display = 'none'; }, 210);
+          }
+        });
+
+        setTimeout(() => {
+          const headerHeight = 84;
+          const rowHeight = 35;
+          const visibleRows = [...rows].filter(r => !r.classList.contains('filtered-out')).length;
+          const newHeight = Math.min(window.innerHeight * 0.75, headerHeight + visibleRows * rowHeight + 20);
+          containerScroll.style.maxHeight = newHeight + 'px';
+        }, 10);
+      }
+
+      function clearFilter() {
+        const input = document.getElementById('search-filter');
+        if (input) { input.value = ''; filterRows(''); input.focus(); }
+        setTimeout(() => navState.reset(), 220);
+      }
+
+      function handleInteraction(pid, dateStr, barEl, rowEl, person) {
+        if (!_unlockedIds.has(pid)) {
+          const now = Date.now();
+          if (now - toastDebounce > 1500) { UI.toast('Calendario bloqueado', 'info'); toastDebounce = now; }
+          return;
+        }
+        if (dragStartValue && !person.unlimited) {
+          const season = Data.getSeason(dateStr, person);
+          const stats = Data.getRealTimeStats(person, currentViewYear);
+          const now = Date.now();
+          if (season === 'summer' && stats.s <= 0) { if (now - toastDebounce > 1000) { UI.toast("Sin días de Verano disponibles", "error"); toastDebounce = now; } return; }
+          if (season === 'winter' && stats.w <= 0) { if (now - toastDebounce > 1000) { UI.toast("Sin días de Invierno disponibles", "error"); toastDebounce = now; } return; }
+        }
+        Data.setVacation(pid, dateStr, dragStartValue);
+        refreshRowVisuals(rowEl, person);
+      }
+
+      function refreshRowVisuals(rowEl, person) {
+        const bars = rowEl.querySelectorAll('.bar-segment');
+        const pid = person.id;
+
+        // Limpiar labels anteriores
+        rowEl.querySelectorAll('.bar-range-label').forEach(el => el.remove());
+
+        bars.forEach((bar, i) => {
+          const date = bar.dataset.date;
+          const isActive = Data.isVacation(pid, date);
+          if (isActive) {
+            const prevActive = bars[i - 1]?.dataset.date && Data.isVacation(pid, bars[i - 1]?.dataset.date);
+            const nextActive = bars[i + 1]?.dataset.date && Data.isVacation(pid, bars[i + 1]?.dataset.date);
+
+            // Obtenemos la temporada (retornará 'summer' o 'winter')
+            const season = Data.getSeason(date, person);
+
+            // Agregamos la temporada como clase CSS
+            bar.className = `bar-segment active ${season}`;
+
+            if (!prevActive && !nextActive) bar.classList.add('bar-single');
+            else if (!prevActive && nextActive) bar.classList.add('bar-start');
+            else if (prevActive && !nextActive) bar.classList.add('bar-end');
+          } else { bar.className = 'bar-segment'; }
+        });
+
+        // Detectar rangos y colocar badge en la celda del medio
+        let rangeStart = -1;
+        for (let i = 0; i <= bars.length; i++) {
+          const isActive = i < bars.length && Data.isVacation(pid, bars[i].dataset.date);
+          if (isActive && rangeStart === -1) {
+            rangeStart = i;
+          } else if (!isActive && rangeStart !== -1) {
+            const rangeEnd = i - 1;
+            const count = rangeEnd - rangeStart + 1;
+            const midIdx = Math.floor((rangeStart + rangeEnd) / 2);
+            const midCell = bars[midIdx].closest('.day-cell');
+            if (midCell) {
+              const label = document.createElement('span');
+              label.className = 'bar-range-label';
+              label.textContent = `${count} día${count !== 1 ? 's' : ''}`;
+              midCell.appendChild(label);
+            }
+            rangeStart = -1;
+          }
+        }
+        const mode = getColumnMode();
+        const stats = mode.getStats(person, currentViewYear, Data.vacations(), Data.getUsedCounts, Data.getYearConfig, Data.getSeason, fechaHoyLocal());
+        const status = Data.getStatus(person, currentViewYear);
+        const sText = (stats.s === Infinity) ? "∞" : stats.s;
+        const wText = (stats.w === Infinity) ? "∞" : stats.w;
+        const sColor = mode.colorize(stats.s);
+        const wColor = mode.colorize(stats.w);
+        const animClass = _animateCols ? 'anim-fade' : '';
+        ['col-summer', 'col-winter'].forEach((cls, i) => {
+          const cell = rowEl.querySelector('.' + cls);
+          const val = i === 0 ? sText : wText;
+          const color = i === 0 ? sColor : wColor;
+          if (animClass) {
+            cell.innerHTML = `<span class="toggle-label ${animClass}" style="color:${color}">${val}</span>`;
+          } else {
+            cell.textContent = val;
+            cell.style.color = color;
+          }
+        });
+        rowEl.querySelector('.col-status').innerHTML = `<span class="badge ${status.cls}">${status.text}</span>`;
+        const dot = rowEl.querySelector('.status-dot');
+        if (dot) {
+          dot.className = 'status-dot';
+          dot.textContent = '';
+          if (status.cls === 'curso') { dot.classList.add('active-curso'); }
+          else if (status.cls === 'completa') { dot.classList.add('active-completa'); }
+          else if (status.cls === 'libre') { dot.classList.add('active-libre'); dot.textContent = '!'; }
+        }
+      }
+
+      document.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          // Solo empujamos al historial si hubo un cambio real en las vacaciones
+          if (_dragVacSnapBefore !== null) {
+            const vacsAhora = Data.vacations();
+            const hayDif = Object.keys(vacsAhora).some(k => !_dragVacSnapBefore[k]) ||
+                           Object.keys(_dragVacSnapBefore).some(k => !vacsAhora[k]);
+            if (hayDif) {
+              Historial.empujar(`${dragStartValue ? 'Asignar' : 'Quitar'} licencia — ${_dragPersonName}`);
+            }
+            _dragVacSnapBefore = null;
+          }
+          Data.notifyChange(); UI.refreshYearSelector && UI.refreshYearSelector();
+        }
+      });
+
+      let _smoothScrollRaf = null;
+
+      function smoothScrollTo(left) {
+        const target = Math.max(0, Math.round(left));
+        if (_smoothScrollRaf) { cancelAnimationFrame(_smoothScrollRaf); _smoothScrollRaf = null; }
+        const start = containerScroll.scrollLeft;
+        const dist = target - start;
+        if (Math.abs(dist) < 1) { containerScroll.scrollLeft = target; return; }
+        const duration = 350;
+        const startTime = performance.now();
+        function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+        function step(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          containerScroll.scrollLeft = Math.round(start + dist * easeOut(progress));
+          if (progress < 1) _smoothScrollRaf = requestAnimationFrame(step);
+          else { containerScroll.scrollLeft = target; _smoothScrollRaf = null; }
+        }
+        _smoothScrollRaf = requestAnimationFrame(step);
+      }
+
+      function scrollToDate(dateStr) {
+        const bars = document.querySelectorAll(`.bar-segment[data-date="${dateStr}"]`);
+        let cell = null;
+        for (const bar of bars) {
+          const row = bar.closest('.gantt-row');
+          if (row && row.style.display !== 'none') { cell = bar.closest('.day-cell'); break; }
+        }
+        if (!cell) {
+          const bar = document.querySelector(`.bar-segment[data-date="${dateStr}"]`);
+          if (bar) cell = bar.closest('.day-cell');
+        }
+        if (cell) smoothScrollTo(cell.offsetLeft - (containerScroll.clientWidth / 2) + 180);
+      }
+
+      function scrollToToday() {
+        // 1. Verificamos si estamos en un año distinto al actual
+        const now = new Date();
+        if (now.getFullYear() !== currentViewYear) {
+          document.getElementById('year-selector').value = now.getFullYear();
+          changeYear(now.getFullYear());
+          setTimeout(() => {
+            const tNew = document.querySelector('.day-cell.type-today');
+            if (tNew) smoothScrollTo(tNew.offsetLeft - (containerScroll.clientWidth / 2) + 180);
+          }, 50);
+          return;
+        }
+
+        // 2. Buscamos la celda de "Hoy"
+        const allToday = document.querySelectorAll('.day-cell.type-today');
+        let t = null;
+        for (const cell of allToday) {
+          const row = cell.closest('.gantt-row');
+          if (row && row.style.display !== 'none') { t = cell; break; }
+        }
+        if (!t) t = allToday[0];
+
+        if (t) {
+          // Calculamos la posición destino de "Hoy"
+          const targetToday = Math.max(0, Math.round(t.offsetLeft - (containerScroll.clientWidth / 2) + 180));
+          const currentScroll = Math.round(containerScroll.scrollLeft);
+
+          // Si la diferencia entre el scroll actual y el objetivo es mínima (estamos en Hoy)
+          if (Math.abs(currentScroll - targetToday) <= 5) {
+            // Saltamos al inicio (Enero)
+            smoothScrollTo(0);
+          } else {
+            // Saltamos a Hoy
+            smoothScrollTo(targetToday);
+          }
+        }
+      }
+
+      let scrollPendiente = 0;
+      let rafScroll = null;
+
+      function togglePanoramicMode(monthDate) {
+        containerScroll.style.opacity = '0';
+        setTimeout(() => {
+          if (isPanoramic) {
+            isPanoramic = false;
+            gridContainer.classList.remove('panoramic-mode');
+            containerScroll.style.overflowX = ''; // restaurar overflow-x:auto
+
+            if (monthDate) {
+              const yearMonth = monthDate.substring(0, 7);
+              const allDayHeaders = gridContainer.querySelectorAll('.header-days .day-num-header');
+              const targetIdx = dateRange.findIndex(d => d.toISOString().split('T')[0].startsWith(yearMonth));
+              if (targetIdx >= 0 && allDayHeaders[targetIdx]) {
+                containerScroll.style.scrollBehavior = 'auto';
+                containerScroll.scrollLeft = allDayHeaders[targetIdx].offsetLeft - 220;
+                containerScroll.style.scrollBehavior = '';
+              }
+            }
+          } else {
+            isPanoramic = true;
+            gridContainer.classList.add('panoramic-mode');
+            // Forzar overflow-x:scroll (en lugar de auto) para que position:sticky right
+            // funcione aunque el grid no desborde horizontalmente en modo panorámico
+            containerScroll.style.overflowX = 'scroll';
+          }
+          containerScroll.style.opacity = '1';
+        }, 180);
+      }
+
+      containerScroll.addEventListener('wheel', (evt) => {
+        if (evt.ctrlKey) {
+          evt.preventDefault();
+          togglePanoramicMode(null);
+          return;
+        }
+
+        const target = evt.target;
+        const isSticky = target.closest('.sticky-left') || target.closest('.sticky-right') || target.closest('.sticky-left-header') || target.closest('.sticky-right-header') || target.classList.contains('person-cell');
+
+        if (!isSticky) {
+          if (evt.deltaY !== 0) {
+            evt.preventDefault();
+            const speed = Data.config().scrollSpeed ?? 3;
+            const dayWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--day-width')) || 38;
+            let delta;
+            if (evt.deltaMode === 0) delta = evt.deltaY * (speed / 3);
+            else if (evt.deltaMode === 1) delta = evt.deltaY * dayWidth * speed;
+            else delta = evt.deltaY * containerScroll.clientWidth * (speed / 3);
+
+            scrollPendiente += delta;
+
+            if (!rafScroll) {
+              rafScroll = requestAnimationFrame(() => {
+                containerScroll.scrollLeft += scrollPendiente;
+                scrollPendiente = 0;
+                rafScroll = null;
+              });
+            }
+          }
+        }
+      }, { passive: false });
+
+      function unlockPerson(pid, forceState) {
+        // forceState: true = forzar unlock, false = forzar lock, undefined = toggle
+        const id = parseInt(pid);
+        if (forceState === true || (forceState === undefined && !_unlockedIds.has(id))) {
+          _unlockedIds.add(id);
+        } else {
+          _unlockedIds.delete(id);
+        }
+        _updateLockUI();
+      }
+
+      function _updateLockUI() {
+        document.querySelectorAll('.person-row').forEach(row => row.classList.remove('gantt-unlocked'));
+        _unlockedIds.forEach(id => {
+          const person = Data.people().find(p => p.id === id);
+          if (person) {
+            const row = document.querySelector(`.person-row[data-name="${person.name.toLowerCase()}"]`);
+            if (row) row.classList.add('gantt-unlocked');
+          }
+        });
+      }
+
+      function refreshColumnMode() {
+        // Actualizar header toggle
+        const cellToggle = gridContainer.querySelector('.col-mode-toggle');
+        if (cellToggle) {
+          const mode = getColumnMode();
+          const animClass = _animateCols ? 'anim-fade' : '';
+          cellToggle.innerHTML = `<div class="toggle-top-row"><span class="toggle-arrow" style="cursor:pointer;" onclick="event.stopPropagation();cycleColumnMode(-1, true)">◀</span><span class="toggle-label ${animClass}">${mode.label}</span><span class="toggle-arrow" style="cursor:pointer;" onclick="event.stopPropagation();cycleColumnMode(1, true)">▶</span></div><div class="col-mode-progress-wrap"><div class="col-mode-progress-bar" id="col-mode-progress"></div></div>`;
+          cellToggle.onclick = () => cycleColumnMode(1, true);
+        }
+        // Actualizar celdas de stats de cada fila
+        const people = Data.people();
+        gridContainer.querySelectorAll('.person-row').forEach(rowEl => {
+          const person = people.find(p => p.name.toLowerCase() === rowEl.dataset.name);
+          if (person) refreshRowVisuals(rowEl, person);
+        });
+      }
+
+      return { render, refreshColumnMode, scrollToToday, scrollToDate, filterRows, clearFilter, changeYear, refreshRow: refreshRowVisuals, togglePanoramicMode, isPanoramicActive: () => isPanoramic, closePanoramic: () => { if (isPanoramic) togglePanoramicMode(null); }, setContextMenuRowHandler: (fn) => { _onContextMenuRow = fn; }, unlockPerson, isPersonUnlocked: (pid) => _unlockedIds.has(parseInt(pid)) };
+    })();
+
+    // --- UI UTILS MODULE ---
+    const UI = (function () {
+      function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const isD = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme_v5', isD ? 'dark' : 'light');
+        const icon = document.getElementById('theme-icon'), label = document.getElementById('theme-label');
+        if (icon) icon.innerHTML = `<use href="#icon-${isD ? 'sun' : 'moon'}"/>`;
+        if (label) label.textContent = isD ? 'Modo claro' : 'Modo oscuro';
+      }
+
+      const _toastQueue = [];
+      let _toastRunning = false;
+      let _toastLast = '';
+
+      function toast(msg, type = '') {
+        if (msg === _toastLast && _toastQueue.length === 0) return;
+        _toastQueue.push({ msg, type });
+        if (!_toastRunning) _toastNext();
+      }
+
+      function _toastNext() {
+        if (!_toastQueue.length) { _toastRunning = false; _toastLast = ''; return; }
+        _toastRunning = true;
+        const { msg, type } = _toastQueue.shift();
+        if (msg === _toastLast && !_toastQueue.length) { _toastNext(); return; }
+        _toastLast = msg;
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show' + (type ? ' ' + type : '');
+        setTimeout(() => {
+          t.className = 'toast';
+          setTimeout(_toastNext, 300); // esperar fade-out antes del siguiente
+        }, 2700);
+      }
+
+      function $(id) { return document.getElementById(id); }
+
+      function openPersonModal(fromGantt = false) {
+        $('p-name').value = "";
+        Areas.populateSelect('p-area', []);
+        $('modal-new-person').dataset.fromGantt = fromGantt ? '1' : '';
+        const btnBack = document.getElementById('btn-new-person-back');
+        if (fromGantt) {
+          btnBack.onclick = () => UI.closeModals();
+          btnBack.innerHTML = '<svg class="icon"><use href="#icon-close"/></svg>Cerrar';
+        } else {
+          btnBack.onclick = () => UI.openConfig();
+          btnBack.innerHTML = '<svg class="icon"><use href="#icon-undo"/></svg>Volver';
+        }
+        $('modal-new-person').classList.add('show');
+        setTimeout(() => $('p-name').focus(), 50);
+      }
+
+      function editPerson(id) {
+        const p = Data.people().find(x => x.id == id);
+        $('ep-name').value = p.name;
+        const pAreas = Array.isArray(p.area) ? p.area : (p.area ? [p.area] : []);
+        Areas.populateSelect('ep-area', pAreas);
+        $('modal-edit-person').dataset.id = id;
+        const h3 = document.querySelector('#modal-edit-person h3'); if (h3) h3.textContent = p.name;
+
+        // Poblar selector de años: año actual + siguiente + años con config propia + años con licencias
+        const currentYear = new Date().getFullYear();
+        const yearSet = new Set([currentYear, currentYear + 1]);
+        if (p.years) Object.keys(p.years).forEach(y => yearSet.add(parseInt(y)));
+        Data.vacacionesDe(p.id).forEach(f => yearSet.add(parseInt(f.split('-')[0])));
+        const years = [...yearSet].sort((a, b) => a - b);
+        const sel = $('ep-year-select');
+        sel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+        sel.value = currentYear;
+
+        UI.loadYearConfig(currentYear);
+        refreshVacList(id); $('modal-edit-person').classList.add('show');
+        // Reflejar si esta persona ya tiene el gantt desbloqueado
+        const btnEG = $('btn-edit-gantt');
+        if (btnEG) {
+          if (Gantt.isPersonUnlocked(id)) {
+            btnEG.innerHTML = '<svg class="icon"><use href="#icon-close"/></svg>Bloquear Calendario';
+            btnEG.classList.add('active');
+          } else {
+            btnEG.innerHTML = '<svg class="icon"><use href="#icon-edit"/></svg>Editar Calendario';
+            btnEG.classList.remove('active');
+          }
+        }
+        if (document.activeElement) document.activeElement.blur();
+        setTimeout(() => $('ep-name').focus(), 50);
+      }
+
+      function loadYearConfig(year) {
+        year = parseInt(year);
+        const id = $('modal-edit-person').dataset.id;
+        const p = Data.people().find(x => x.id == id);
+        if (!p) return;
+        const cfg = Data.config();
+        const y = p.years && p.years[year];
+
+        const hasCustomLimits = y && (y.summer !== undefined || y.winter !== undefined || y.unlimited !== undefined);
+        const btnL = $('ep-custom-limits'), fieldsL = $('ep-limits-fields');
+        const limitsCurrentlyOpen = btnL.classList.contains('active');
+        if (hasCustomLimits) {
+          $('ep-summer').value = y.summer !== undefined ? y.summer : cfg.defSummer;
+          $('ep-winter').value = y.winter !== undefined ? y.winter : cfg.defWinter;
+          y.unlimited ? $('ep-unlimited').classList.add('active') : $('ep-unlimited').classList.remove('active');
+          if (!limitsCurrentlyOpen) animateSection(btnL, fieldsL, true);
+          else { btnL.classList.add('active'); btnL.textContent = 'Sí'; }
+        } else {
+          $('ep-summer').value = cfg.defSummer; $('ep-winter').value = cfg.defWinter;
+          $('ep-unlimited').classList.remove('active');
+          if (limitsCurrentlyOpen) animateSection(btnL, fieldsL, false);
+          else { btnL.classList.remove('active'); btnL.textContent = 'No'; }
+        }
+        UI.toggleEditLimits(hasCustomLimits && y && y.unlimited);
+
+        const hasCustomSeason = y && (y.sStart !== undefined || y.sEnd !== undefined);
+        const btnS = $('ep-custom-season'), fieldsS = $('ep-season-fields');
+        const seasonCurrentlyOpen = btnS.classList.contains('active');
+        if (hasCustomSeason) {
+          $('ep-sStart').value = y.sStart !== undefined ? y.sStart : cfg.sStart;
+          $('ep-sEnd').value = y.sEnd !== undefined ? y.sEnd : cfg.sEnd;
+          if (!seasonCurrentlyOpen) animateSection(btnS, fieldsS, true);
+          else { btnS.classList.add('active'); btnS.textContent = 'Sí'; }
+        } else {
+          $('ep-sStart').value = cfg.sStart; $('ep-sEnd').value = cfg.sEnd;
+          if (seasonCurrentlyOpen) animateSection(btnS, fieldsS, false);
+          else { btnS.classList.remove('active'); btnS.textContent = 'No'; }
+        }
+      }
+
+      function refreshVacList(pid) {
+        const person = Data.people().find(x => x.id == pid);
+        const vacaciones = Data.vacacionesDe(pid), container = $('person-vac-items');
+        container.innerHTML = '';
+        const rangos = agruparEnRangos(vacaciones);
+        rangos.forEach(r => {
+          const item = document.createElement('div'); item.className = 'vac-item';
+          const texto = r.inicio === r.fin ? formatearFecha(r.inicio) : `${formatearFecha(r.inicio)} → ${formatearFecha(r.fin)}`;
+          const dias = r.dias === 1 ? '1 día' : `${r.dias} días`;
+          const temporada = Data.getSeason(r.inicio, person) === 'summer' ? '☀️' : '❄️';
+          item.innerHTML = `<span style="flex:1;">${texto}</span><span class="vac-item-season">${temporada} ${dias}</span><button class="vac-item-delete" title="Eliminar rango">✕</button>`;
+          item.style.cursor = 'pointer';
+          item.onclick = (e) => {
+            if (e.target.closest('.vac-item-delete')) return;
+            UI.closeModals();
+            const targetYear = parseInt(r.inicio.split('-')[0]), targetMonth = parseInt(r.inicio.split('-')[1]);
+            const viewYear = targetMonth === 12 ? targetYear + 1 : targetYear;
+            const sel = document.getElementById('year-selector');
+            if (parseInt(sel.value) !== viewYear) {
+              sel.value = viewYear;
+              Gantt.changeYear(viewYear, () => Gantt.scrollToDate(r.inicio));
+            } else {
+              setTimeout(() => Gantt.scrollToDate(r.inicio), 50);
+            }
+          };
+          item.querySelector('.vac-item-delete').onclick = (e) => {
+            e.stopPropagation();
+            const p = Data.people().find(x => x.id == pid);
+            Historial.empujar(`Eliminar licencia — ${p?.name || pid} (${r.inicio} → ${r.fin})`);
+            eliminarRango(pid, r.inicio, r.fin); refreshVacList(pid);
+            const personRow = document.querySelector(`.person-row[data-name="${Data.people().find(x => x.id == pid)?.name?.toLowerCase()}"]`);
+            if (personRow) Gantt.refreshRow(personRow, Data.people().find(x => x.id == pid));
+            Data.notifyChange(); refreshYearSelector();
+          };
+          container.appendChild(item);
+        });
+      }
+
+      function eliminarRango(pid, inicio, fin) {
+        let curr = new Date(inicio + 'T00:00:00'); const endD = new Date(fin + 'T00:00:00');
+        while (curr <= endD) { Data.setVacation(pid, curr.toISOString().split('T')[0], false); curr.setDate(curr.getDate() + 1); }
+      }
+
+      function agruparEnRangos(fechas) {
+        const sorted = [...fechas].sort(), rangos = [];
+        if (!sorted.length) return rangos;
+        let inicio = sorted[0], fin = sorted[0], dias = 1;
+        for (let i = 1; i < sorted.length; i++) {
+          const prev = new Date(sorted[i - 1]), curr = new Date(sorted[i]);
+          if ((curr - prev) / 86400000 === 1) { fin = sorted[i]; dias++; } else { rangos.push({ inicio, fin, dias }); inicio = sorted[i]; fin = sorted[i]; dias = 1; }
+        }
+        rangos.push({ inicio, fin, dias });
+        return rangos.sort((a, b) => b.inicio.localeCompare(a.inicio));
+      }
+
+      function toggleDateQuick(inputId) { const input = $(inputId); input.value = input.value ? '' : fechaHoyLocal(); }
+      function formatearFecha(dateStr) { const [y, m, d] = dateStr.split('-'); return `${d}/${m}/${y}`; }
+      function animateSection(btn, fields, enable) {
+        if (enable) {
+          btn.classList.add('active'); btn.textContent = 'Sí';
+          fields.style.display = '';
+          fields.style.overflow = 'hidden';
+          fields.style.height = '0';
+          fields.style.opacity = '0';
+          const toH = fields.scrollHeight;
+          requestAnimationFrame(() => {
+            fields.style.transition = 'height 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease';
+            fields.style.height = toH + 'px';
+            fields.style.opacity = '1';
+            setTimeout(() => { fields.style.transition = ''; fields.style.height = ''; fields.style.overflow = ''; fields.style.opacity = ''; }, 270);
+          });
+        } else {
+          btn.classList.remove('active'); btn.textContent = 'No';
+          const fromH = fields.scrollHeight;
+          fields.style.height = fromH + 'px';
+          fields.style.overflow = 'hidden';
+          requestAnimationFrame(() => {
+            fields.style.transition = 'height 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease';
+            fields.style.height = '0';
+            fields.style.opacity = '0';
+            setTimeout(() => { fields.style.transition = ''; fields.style.height = ''; fields.style.overflow = ''; fields.style.opacity = ''; fields.style.display = 'none'; }, 270);
+          });
+        }
+      }
+
+      function toggleCustomLimits(isActive) {
+        const btn = $('ep-custom-limits'), fields = $('ep-limits-fields');
+        if (!btn || !fields) return;
+        animateSection(btn, fields, !isActive);
+      }
+
+      function toggleCustomSeason(isActive) {
+        const btn = $('ep-custom-season'), fields = $('ep-season-fields');
+        if (!btn || !fields) return;
+        animateSection(btn, fields, !isActive);
+      }
+      function toggleEditLimits(unl) { $('ep-summer').disabled = unl; $('ep-winter').disabled = unl; }
+
+      function toggleGanttEditMode() {
+        const pid = parseInt($('modal-edit-person').dataset.id);
+        const isUnlocked = Gantt.isPersonUnlocked(pid);
+        if (isUnlocked) {
+          // Bloquear solo esta persona
+          Gantt.unlockPerson(pid, false);
+          const btn = $('btn-edit-gantt');
+          if (btn) { btn.innerHTML = '<svg class="icon"><use href="#icon-edit"/></svg>Editar Calendario'; btn.classList.remove('active'); }
+          UI.toast('Calendario bloqueado', 'info');
+        } else {
+          // Desbloquear esta persona y cerrar modal
+          Gantt.unlockPerson(pid, true);
+          const person = Data.people().find(p => p.id === pid);
+          closeModals();
+          UI.toast(`Editando fila de ${person ? person.name : ''}`, 'success');
+        }
+      }
+
+      function openHolidayModal() {
+        closeModals();
+        const sel = document.getElementById('year-selector');
+        Holidays.renderList(sel ? parseInt(sel.value) : new Date().getFullYear());
+        document.getElementById('modal-holidays').classList.add('show');
+      }
+
+      function openAreasModal() {
+        closeModals();
+        Areas.renderList();
+        $('modal-areas').classList.add('show');
+      }
+
+      function resetAll() {
+        showConfirm(
+          'Restablecer todo',
+          'Se eliminarán todas las personas, licencias, feriados, áreas y configuración. Esta acción no se puede deshacer.',
+          () => {
+            localStorage.removeItem('licencias_data_v1');
+            localStorage.removeItem('licencias_holidays_v1');
+            localStorage.removeItem('licencias_areas_v1');
+            location.reload();
+          }
+        );
+      }
+
+      function openConfig() {
+        closeModals();
+        const c = Data.config();
+        $('conf-summer').value = c.defSummer; $('conf-winter').value = c.defWinter;
+        $('conf-s-start').value = c.sStart; $('conf-s-end').value = c.sEnd;
+        const spd = c.scrollSpeed ?? 3; $('conf-scroll-speed').value = spd; $('conf-scroll-speed-label').textContent = spd;
+        $('modal-config').classList.add('show');
+      }
+
+      function openGist() {
+        closeModals();
+        GistSync.poblarModal();
+        $('modal-gist').classList.add('show');
+      }
+
+      function closeModals() {
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+      }
+
+      function goBack() {
+        const modal = document.querySelector('.modal.show');
+        if (!modal) return;
+        const btnBack = modal.querySelector('button svg use[href="#icon-undo"]')?.closest('button');
+        if (btnBack) btnBack.click();
+        else closeModals();
+      }
+      function initYearSelector() { refreshYearSelector(); }
+
+      function refreshYearSelector() {
+        const sel = document.getElementById('year-selector'), current = new Date().getFullYear();
+        const currentVal = parseInt(sel.value) || current;
+        const vacYears = new Set(Object.keys(Data.vacations()).map(k => parseInt(k.split('-')[1])).filter(y => !isNaN(y) && y > 1900));
+        vacYears.add(current);
+        const years = Array.from(vacYears).sort((a, b) => a - b);
+        sel.innerHTML = '';
+        years.forEach(y => {
+          const opt = document.createElement('option'); opt.value = y; opt.textContent = y;
+          if (y === currentVal) opt.selected = true; sel.appendChild(opt);
+        });
+        if (!years.includes(currentVal)) { sel.value = current; }
+      }
+
+      function toggleAddRangeForm(forceOpen) {
+        const form = $('add-range-form');
+        if (forceOpen !== undefined ? forceOpen : !form.classList.contains('open')) {
+          form.classList.add('open');
+          const hoy = new Date();
+          const hoyStr = `${hoy.getDate()}/${hoy.getMonth() + 1}/${hoy.getFullYear()}`;
+          if (!$('range-start').value) $('range-start').value = hoyStr;
+          if (!$('range-end').value) $('range-end').value = hoyStr;
+          setTimeout(() => $('range-start').focus(), 50);
+        } else { form.classList.remove('open'); }
+      }
+
+      function confirmAddRange() {
+        const pid = $('modal-edit-person').dataset.id;
+        if (!pid) return UI.toast("Guarda la persona primero", "info");
+        const anioDefault = parseInt(document.getElementById('year-selector')?.value || new Date().getFullYear());
+        const start = Holidays.parsearFechaLibre($('range-start').value || '', anioDefault);
+        const end = Holidays.parsearFechaLibre($('range-end').value || '', anioDefault);
+        if (!start) return UI.toast("Fecha 'Desde' inválida", "info");
+        if (!end) return UI.toast("Fecha 'Hasta' inválida", "info");
+        if (start > end) return UI.toast("La fecha de inicio debe ser ≤ fin", "info");
+
+        const person = Data.people().find(x => x.id == pid);
+        if (!person) return;
+
+        let curr = new Date(start + 'T00:00:00'), endD = new Date(end + 'T00:00:00'), added = 0;
+        while (curr <= endD) {
+          const dStr = curr.toISOString().split('T')[0];
+          if (!Data.isVacation(pid, dStr)) {
+            if (!person.unlimited) {
+              const season = Data.getSeason(dStr, person), stats = Data.getRealTimeStats(person, parseInt(dStr.split('-')[0]));
+              if (season === 'summer' && stats.s <= 0 || season === 'winter' && stats.w <= 0) { curr.setDate(curr.getDate() + 1); continue; }
+            }
+            Data.setVacation(pid, dStr, true); added++;
+          }
+          curr.setDate(curr.getDate() + 1);
+        }
+        if (added > 0) Historial.empujar(`Agregar licencias — ${person.name} (${start} → ${end})`);
+        Data.notifyChange(); Gantt.render(); refreshYearSelector();
+        $('range-start').value = ''; $('range-end').value = '';
+        refreshVacList(pid);
+        UI.toast(added > 0 ? ` ${added} día(s) agregado(s)` : " Sin días disponibles en ese rango", added > 0 ? "success" : "info");
+      }
+
+      let _parsedImportData = null;
+      function openImportModal() {
+        _parsedImportData = null;
+        $('import-dropzone-text').textContent = '📂 Tocá para seleccionar un archivo JSON';
+        $('import-dropzone').classList.remove('has-file');
+        $('btn-import-replace').disabled = true; $('btn-import-merge').disabled = true;
+        if ($('import-file-input')) $('import-file-input').value = '';
+        UI.closeModals(); $('modal-import').classList.add('show');
+        setTimeout(() => { const f = $('import-file-input'); if (f) f.click(); }, 200);
+      }
+
+      let _confirmParent = null;
+      function showConfirm(title, msg, onOk) {
+        // Recordar el modal padre que estaba abierto (si hay alguno)
+        _confirmParent = document.querySelector('.modal.show:not(#modal-confirm)') || null;
+        if (_confirmParent) _confirmParent.classList.remove('show');
+        $('confirm-title').textContent = title;
+        $('confirm-msg').textContent = msg;
+        $('confirm-ok').onclick = () => { closeConfirm(); onOk(); };
+        $('modal-confirm').classList.add('show');
+      }
+
+      function closeConfirm() {
+        $('modal-confirm').classList.remove('show');
+        // Restaurar el modal padre si había uno
+        if (_confirmParent) { _confirmParent.classList.add('show'); _confirmParent = null; }
+      }
+
+      function onImportFileSelected(input) {
+        const file = input.files[0]; if (!file) return;
+        if (file.size > S.SECURITY_LIMITS.MAX_JSON_SIZE) { UI.toast("Archivo demasiado grande", "error"); return; }
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const data = JSON.parse(e.target.result, (k, v) => ['__proto__', 'constructor', 'prototype'].includes(k) ? undefined : v);
+            if (!data || typeof data !== 'object' || Array.isArray(data.people) === false) throw "Estructura inválida";
+
+            // Verificar versión
+            if (data.version !== undefined && data.version !== S.SECURITY_LIMITS.SCHEMA_VERSION) {
+              UI.toast(`Versión de backup incompatible (v${data.version})`, "error"); return;
+            }
+
+            const proceder = () => {
+              _parsedImportData = data;
+              $('import-dropzone-text').textContent = `✓ ${file.name} (${data.people.length} persona(s))`;
+              $('import-dropzone').classList.add('has-file');
+              $('btn-import-replace').disabled = false; $('btn-import-merge').disabled = false;
+            };
+
+            // Verificar hash
+            if (data.hash) {
+              const payload = { people: data.people, vacations: data.vacations, config: data.config };
+              const hashCalculado = await S.calcularHashSHA256(payload);
+              if (hashCalculado !== data.hash) {
+                UI.showConfirm(
+                  '⚠ Hash no coincide',
+                  'El archivo fue modificado manualmente o está corrupto. El hash de integridad no coincide con el contenido. ¿Querés importarlo de todos modos?',
+                  proceder
+                );
+                return;
+              }
+            } else {
+              UI.showConfirm(
+                'Backup sin verificación',
+                'Este archivo no tiene hash de integridad, posiblemente es un backup antiguo. ¿Querés importarlo de todos modos?',
+                proceder
+              );
+              return;
+            }
+
+            proceder();
+          } catch (err) { UI.toast("Error al leer el archivo", "error"); }
+        };
+        reader.readAsText(file);
+      }
+
+      function confirmImport(mode) { if (_parsedImportData) Data.importData(_parsedImportData, mode); _parsedImportData = null; }
+
+      return { toggleTheme, toast, openPersonModal, editPerson, closeModals, goBack, openConfig, openGist, toggleEditLimits, toggleCustomLimits, toggleCustomSeason, loadYearConfig, initYearSelector, refreshYearSelector, toggleAddRangeForm, confirmAddRange, refreshVacList, toggleDateQuick, openHolidayModal, openAreasModal, resetAll, openImportModal, onImportFileSelected, confirmImport, showConfirm, closeConfirm, toggleGanttEditMode };
+    })();
+
+    // --- HOLIDAYS MODULE ---
+    const Holidays = (function () {
+      const LS_KEY = 'licencias_holidays_v1'; let data = {};
+      function cargar() {
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) { data = {}; return; }
+          // Validar y sanear cada entrada
+          data = {};
+          for (const [year, yearData] of Object.entries(parsed)) {
+            if (!/^\d{4}$/.test(year) || typeof yearData !== 'object') continue;
+            data[year] = {};
+            for (const [dateStr, name] of Object.entries(yearData)) {
+              if (!S.validarFechaSegura(dateStr)) continue;
+              data[year][dateStr] = S.sanitizeString(String(name), 60) || 'Feriado';
+            }
+            if (!Object.keys(data[year]).length) delete data[year];
+          }
+        } catch (e) { data = {}; }
+      }
+      function persistir() { try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (e) { } }
+      function getYear(year) { return data[year] || {}; }
+      function isHoliday(dateStr) { const year = dateStr.substring(0, 4); return !!(data[year] && data[year][dateStr]); }
+
+      function parsearFechaLibre(token, anioDefault) {
+        const partes = token.trim().replace(/[-\.]/g, '/').split('/').map(p => parseInt(p, 10));
+        if (partes.length < 2 || partes.some(isNaN)) return null;
+        let [d, m, a] = partes; if (!a) a = anioDefault; else if (a < 100) a = 2000 + a;
+        if (m < 1 || m > 12 || d < 1 || d > 31) return null;
+        return `${a}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+
+      function add() {
+        const rawDates = document.getElementById('holiday-date-input').value.trim();
+        const name = S.sanitizeString(document.getElementById('holiday-name-input').value.trim(), 60) || 'Feriado';
+        if (!rawDates) return UI.toast('Ingresá al menos una fecha', 'info');
+
+        const anioDefault = parseInt(document.getElementById('holiday-year-selector')?.value || document.getElementById('year-selector')?.value || new Date().getFullYear());
+        const agregadas = [], duplicadas = [], invalidas = [];
+        rawDates.split(',').forEach(token => {
+          const iso = parsearFechaLibre(token, anioDefault);
+          if (!iso) { invalidas.push(token.trim()); return; }
+          const year = iso.substring(0, 4);
+          if (data[year] && data[year][iso]) { duplicadas.push(iso); return; }
+          if (!data[year]) data[year] = {};
+          data[year][iso] = name; agregadas.push(iso);
+        });
+
+        // Solo errores, nada se agregó
+        if (!agregadas.length) {
+          if (invalidas.length) return UI.toast(`Fecha(s) inválida(s): ${invalidas.join(', ')}`, 'error');
+          if (duplicadas.length) return UI.toast(duplicadas.length === 1 ? `"${duplicadas[0]}" ya existe` : `${duplicadas.length} fechas ya existen`, 'error');
+          return;
+        }
+
+        persistir(); document.getElementById('holiday-name-input').value = ''; document.getElementById('holiday-date-input').value = '';
+        renderList(parseInt(agregadas[0].substring(0, 4))); Gantt.render();
+
+        const partes = [];
+        if (agregadas.length) partes.push(`${agregadas.length === 1 ? '1 feriado agregado' : `${agregadas.length} feriados agregados`}`);
+        if (duplicadas.length) partes.push(`${duplicadas.length} duplicado${duplicadas.length > 1 ? 's' : ''}`);
+        if (invalidas.length) partes.push(`${invalidas.length} inválido${invalidas.length > 1 ? 's' : ''}`);
+        UI.toast(`✓ ${partes.join(' · ')}`, duplicadas.length || invalidas.length ? 'info' : 'success');
+      }
+
+      function remove(dateStr) {
+        const year = dateStr.substring(0, 4);
+        if (data[year]) { delete data[year][dateStr]; if (Object.keys(data[year]).length === 0) delete data[year]; persistir(); }
+        renderList(parseInt(document.getElementById('holiday-year-selector')?.value || document.getElementById('year-selector')?.value || new Date().getFullYear())); Gantt.render();
+      }
+
+      function renderList(year) {
+        const list = document.getElementById('holiday-list');
+        const sel = document.getElementById('holiday-year-selector');
+        if (!list) return;
+        if (sel) {
+          if (!sel.options.length) {
+            const currentYear = new Date().getFullYear();
+            for (let y = currentYear - 1; y <= currentYear + 1; y++) {
+              const opt = document.createElement('option');
+              opt.value = y; opt.textContent = y;
+              sel.appendChild(opt);
+            }
+          }
+          sel.value = year;
+        }
+
+        // 1. Fijar altura actual como punto de partida
+        const fromH = list.getBoundingClientRect().height;
+        list.style.transition = 'none';
+        list.style.height = fromH + 'px';
+        list.style.overflow = 'hidden';
+
+        // 2. Fade out
+        requestAnimationFrame(() => {
+          list.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+          list.style.opacity = '0';
+          list.style.transform = 'translateY(-5px)';
+        });
+
+        setTimeout(() => {
+          // 3. Actualizar contenido con height:auto temporalmente para medir
+          list.style.transition = 'none';
+          list.style.height = 'auto';
+          const holidays = getYear(year), sorted = Object.keys(holidays).sort();
+          if (sorted.length === 0) {
+            list.innerHTML = `<div style="color:var(--text-muted);font-size:0.875rem;padding:0.5rem 0;">No hay feriados cargados para ${year}.</div>`;
+          } else {
+            list.innerHTML = sorted.map(d => `<div class="holiday-item"><span class="holiday-date">${d.split('-')[2]}/${d.split('-')[1]}/${d.split('-')[0]}</span><span class="holiday-name">${S.escapeHTML(holidays[d])}</span><button class="btn-remove-holiday" onclick="Holidays.remove('${d}')" title="Eliminar">✕</button></div>`).join('');
+          }
+          // 4. Medir nueva altura y volver al fromH antes de animar
+          const toH = list.scrollHeight;
+          list.style.height = fromH + 'px';
+
+          requestAnimationFrame(() => {
+            list.style.transition = 'height 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease, transform 0.2s ease';
+            list.style.height = toH + 'px';
+            list.style.opacity = '1';
+            list.style.transform = 'translateY(0)';
+            setTimeout(() => {
+              list.style.transition = '';
+              list.style.height = '';
+              list.style.overflow = '';
+            }, 270);
+          });
+        }, 160);
+      }
+
+      return {
+        cargar, isHoliday, getYear, add, remove, renderList, parsearFechaLibre, getAll: () => data, importAll: (rawData) => {
+          if (!rawData || typeof rawData !== 'object' || Array.isArray(rawData)) return;
+          data = {};
+          for (const [year, yearData] of Object.entries(rawData)) {
+            if (!/^\d{4}$/.test(year) || typeof yearData !== 'object') continue;
+            data[year] = {};
+            for (const [dateStr, name] of Object.entries(yearData)) {
+              if (!S.validarFechaSegura(dateStr)) continue;
+              data[year][dateStr] = S.sanitizeString(String(name), 60) || 'Feriado';
+            }
+            if (!Object.keys(data[year]).length) delete data[year];
+          }
+          persistir(); Gantt.render();
+        }
+      };
+    })();
+
+    function fechaHoyLocal() {
+      const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // --- HISTORIAL MODULE (undo/redo) ---
+    const Historial = (function () {
+      const MAX = 30;
+      let _pasado = [];
+      let _futuro = [];
+
+      function _snap() {
+        return JSON.parse(JSON.stringify({
+          people: Data.people(),
+          vacations: Data.vacations(),
+          config: Data.config()
+        }));
+      }
+
+      function _actualizarBotones() {
+        const u = document.getElementById('btn-undo');
+        const r = document.getElementById('btn-redo');
+        if (u) u.disabled = _pasado.length === 0;
+        if (r) r.disabled = _futuro.length === 0;
+      }
+
+      // Llamar ANTES de mutar datos
+      function empujar(label) {
+        _pasado.push({ snap: _snap(), label });
+        if (_pasado.length > MAX) _pasado.shift();
+        _futuro = [];
+        _actualizarBotones();
+      }
+
+      function _aplicar(snap) {
+        Data.loadFromObj(snap);
+        Data.setLoaded();
+        Data.notifyChange();
+        UI.refreshYearSelector && UI.refreshYearSelector();
+      }
+
+      function undo() {
+        if (!_pasado.length) return;
+        const entrada = _pasado.pop();
+        _futuro.push({ snap: _snap(), label: entrada.label });
+        if (_futuro.length > MAX) _futuro.shift();
+        _aplicar(entrada.snap);
+        _actualizarBotones();
+        UI.toast(`Deshecho: ${entrada.label}`, 'info');
+      }
+
+      function redo() {
+        if (!_futuro.length) return;
+        const entrada = _futuro.pop();
+        _pasado.push({ snap: _snap(), label: entrada.label });
+        if (_pasado.length > MAX) _pasado.shift();
+        _aplicar(entrada.snap);
+        _actualizarBotones();
+        UI.toast(`Rehecho: ${entrada.label}`, 'info');
+      }
+
+      return { empujar, undo, redo };
+    })();
+
+    // --- GIST SYNC MODULE ---
+    const GistSync = (function () {
+      const CFG_KEY = 'lic_gist_cfg';
+      const FILENAME = 'licencias_data.json';
+      const DEBOUNCE_MS = 3000;
+      const RE_GIST_ID = /^[a-f0-9]{20,40}$/i;
+
+      let _cfg = { token: '', gistId: '', lastSync: null, auto: false };
+      let _debounceTimer = null;
+      let _subiendo = false;
+
+      function _cargarCfg() {
+        try {
+          const raw = localStorage.getItem(CFG_KEY);
+          if (raw) { const c = JSON.parse(raw); if (c) _cfg = { ..._cfg, ...c }; }
+        } catch (_) {}
+      }
+
+      function _guardarCfg() {
+        try { localStorage.setItem(CFG_KEY, JSON.stringify(_cfg)); } catch (_) {}
+      }
+
+      function _setBusy(busy) {
+        _subiendo = busy;
+        ['btn-gist-subir', 'btn-gist-bajar'].forEach(id => {
+          const b = document.getElementById(id); if (b) b.disabled = busy;
+        });
+        const subir = document.getElementById('btn-gist-subir');
+        if (subir) subir.classList.toggle('icon-btn-spinning', busy);
+      }
+
+      function _setStatus(msg) {
+        const el = document.getElementById('gist-sync-status'); if (el) el.textContent = msg;
+      }
+
+      function _setStatusSync() {
+        const d = new Date(_cfg.lastSync);
+        _setStatus(`Sincronizado: ${d.toLocaleDateString('es-AR')} ${d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`);
+      }
+
+      function _actualizarLinkBtn() {
+        const id = document.getElementById('gist-id')?.value.trim();
+        const btn = document.getElementById('gist-link-btn');
+        if (!btn) return;
+        if (id) { btn.href = `https://gist.github.com/${id}`; btn.style.display = 'flex'; }
+        else btn.style.display = 'none';
+      }
+
+      function _actualizarToggleUI() {
+        const t = document.getElementById('gist-autosync-toggle');
+        if (t) t.classList.toggle('on', !!_cfg.auto);
+      }
+
+      function _buildPayload() {
+        return {
+          people: Data.people(),
+          vacations: Data.vacations(),
+          config: Data.config(),
+          holidays: Holidays.getAll(),
+          areas: Areas.getAll(),
+          fecha: S.fechaLocalISO(),
+          version: S.SECURITY_LIMITS.SCHEMA_VERSION,
+          timestamp: Date.now()
+        };
+      }
+
+      function toggleToken() {
+        const inp = document.getElementById('gist-token');
+        const icon = document.getElementById('gist-eye-icon');
+        if (!inp) return;
+        const show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        if (icon) icon.setAttribute('href', show ? '#icon-eye-off' : '#icon-eye');
+      }
+
+      function toggleAuto() {
+        const t = document.getElementById('gist-autosync-toggle');
+        if (t) t.classList.toggle('on');
+      }
+
+      function guardarConfig() {
+        const nuevoToken = document.getElementById('gist-token')?.value.trim() || '';
+        const nuevoGistId = document.getElementById('gist-id')?.value.trim() || '';
+        const nuevoAuto = document.getElementById('gist-autosync-toggle')?.classList.contains('on') || false;
+
+        if (nuevoGistId && !RE_GIST_ID.test(nuevoGistId)) {
+          UI.toast('Gist ID con formato inválido', 'error');
+          document.getElementById('gist-id')?.classList.add('error');
+          return;
+        }
+
+        const sinCambios = _cfg.token === nuevoToken && _cfg.gistId === nuevoGistId && !!_cfg.auto === nuevoAuto;
+        if (sinCambios) { UI.closeModals(); UI.toast('Sin cambios', 'info'); return; }
+
+        _cfg.token = nuevoToken; _cfg.gistId = nuevoGistId; _cfg.auto = nuevoAuto;
+        _guardarCfg();
+        UI.closeModals();
+        UI.toast(nuevoAuto ? 'Configuración guardada · Auto-sync activado' : 'Configuración guardada');
+      }
+
+      async function _ejecutarSubida(silencioso = false) {
+        const token = _cfg.token, gistId = _cfg.gistId;
+        if (!token) { if (!silencioso) UI.toast('Ingresá el token primero', 'error'); return; }
+        if (gistId && !RE_GIST_ID.test(gistId)) { if (!silencioso) UI.toast('Gist ID inválido', 'error'); return; }
+
+        _setBusy(true);
+        if (!silencioso) _setStatus('Subiendo…');
+
+        const payload = JSON.stringify(_buildPayload(), null, 2);
+        const body = { files: { [FILENAME]: { content: payload } } };
+
+        try {
+          let res;
+          if (gistId) {
+            res = await fetch(`https://api.github.com/gists/${gistId}`, {
+              method: 'PATCH',
+              headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify(body)
+            });
+          } else {
+            body.description = 'Licencias — Control de Vacaciones';
+            body.public = false;
+            res = await fetch('https://api.github.com/gists', {
+              method: 'POST',
+              headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify(body)
+            });
+          }
+
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          if (!gistId && data.id) {
+            _cfg.gistId = data.id;
+            const el = document.getElementById('gist-id'); if (el) el.value = data.id;
+            _actualizarLinkBtn();
+          }
+          _cfg.lastSync = new Date().toISOString();
+          _guardarCfg();
+          _setStatusSync();
+          if (!silencioso) UI.toast('Datos subidos a Gist', 'success');
+
+        } catch (err) {
+          _setStatus(`Error: ${err.message}`);
+          if (!silencioso) UI.toast(`Error al subir: ${err.message}`, 'error');
+        } finally {
+          _setBusy(false);
+        }
+      }
+
+      function subir() { _ejecutarSubida(false); }
+
+      function subirAuto() {
+        if (!_cfg.auto || !_cfg.token) return;
+        clearTimeout(_debounceTimer);
+        _debounceTimer = setTimeout(() => { if (!_subiendo) _ejecutarSubida(true); }, DEBOUNCE_MS);
+      }
+
+      async function bajar() {
+        const token = document.getElementById('gist-token')?.value.trim() || _cfg.token;
+        const gistId = document.getElementById('gist-id')?.value.trim() || _cfg.gistId;
+        if (!token) { UI.toast('Ingresá el token primero', 'error'); return; }
+        if (!gistId) { UI.toast('Ingresá el Gist ID primero', 'error'); return; }
+        if (!RE_GIST_ID.test(gistId)) { UI.toast('Gist ID inválido', 'error'); return; }
+
+        _setBusy(true); _setStatus('Bajando…');
+
+        try {
+          const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+            headers: { Authorization: `token ${token}` }
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          const file = data.files?.[FILENAME];
+          if (!file) throw new Error(`No se encontró "${FILENAME}" en el Gist`);
+
+          let contenido = file.content;
+          if (file.truncated) {
+            const rawOrigin = new URL(file.raw_url).hostname;
+            if (!rawOrigin.endsWith('.githubusercontent.com')) throw new Error('raw_url inválida');
+            const r2 = await fetch(file.raw_url); contenido = await r2.text();
+          }
+
+          const remotoRaw = JSON.parse(contenido);
+          if (!remotoRaw || !Array.isArray(remotoRaw.people)) throw new Error('Formato inválido');
+
+          // Contar novedades sin mutar
+          const localPeopleIds = new Set(Data.people().map(p => String(p.id)));
+          const localVacs = Data.vacations();
+          const nuevasPersonas = (remotoRaw.people || []).filter(p => S.validarPersonaSegura(p) && !localPeopleIds.has(String(p.id)));
+          const nuevasVacs = Object.keys(remotoRaw.vacations || {}).filter(k => S.validarVacationKey(k) && !localVacs[k]);
+
+          if (nuevasPersonas.length === 0 && nuevasVacs.length === 0) {
+            _cfg.token = token; _cfg.gistId = gistId;
+            _cfg.lastSync = new Date().toISOString(); _guardarCfg(); _setStatusSync();
+            UI.toast('Sin novedades', 'info'); _setBusy(false); return;
+          }
+
+          // Mostrar modal de novedades para confirmar
+          const msg = document.getElementById('gist-novedades-msg');
+          if (msg) {
+            const partes = [];
+            if (nuevasPersonas.length) partes.push(`${nuevasPersonas.length} persona(s) nueva(s)`);
+            if (nuevasVacs.length) partes.push(`${nuevasVacs.length} licencia(s) nueva(s)`);
+            msg.textContent = `Se encontraron novedades en el Gist: ${partes.join(' · ')}. ¿Aplicar?`;
+          }
+
+          const btnOk = document.getElementById('gist-novedades-ok');
+          if (btnOk) {
+            btnOk.onclick = () => {
+              UI.closeModals();
+              Historial.empujar('Bajar desde Gist');
+              Data.importData(remotoRaw, 'merge');
+              _cfg.token = token; _cfg.gistId = gistId;
+              _cfg.lastSync = new Date().toISOString(); _guardarCfg(); _setStatusSync();
+              const partes2 = [];
+              if (nuevasPersonas.length) partes2.push(`+${nuevasPersonas.length} personas`);
+              if (nuevasVacs.length) partes2.push(`+${nuevasVacs.length} licencias`);
+              UI.toast(`Combinado: ${partes2.join(' · ')}`, 'success');
+            };
+          }
+          _setBusy(false);
+          document.getElementById('modal-gist-novedades').classList.add('show');
+
+        } catch (err) {
+          _setStatus(`Error: ${err.message}`);
+          UI.toast(`Error al bajar: ${err.message}`, 'error');
+          _setBusy(false);
+        }
+      }
+
+      function poblarModal() {
+        _cargarCfg();
+        const tokenEl = document.getElementById('gist-token');
+        const idEl = document.getElementById('gist-id');
+        const eyeIcon = document.getElementById('gist-eye-icon');
+        if (tokenEl) { tokenEl.value = _cfg.token || ''; tokenEl.type = 'password'; }
+        if (idEl) idEl.value = _cfg.gistId || '';
+        if (eyeIcon) eyeIcon.setAttribute('href', '#icon-eye');
+        _actualizarLinkBtn();
+        _actualizarToggleUI();
+        if (_cfg.lastSync) _setStatusSync(); else _setStatus('');
+      }
+
+      function init() {
+        _cargarCfg();
+        if (_cfg.auto && _cfg.token && _cfg.gistId) {
+          // Al iniciar con auto-sync: verificar novedades silenciosamente
+          setTimeout(() => _ejecutarSubida(true), 2000);
+        }
+      }
+
+      return { init, subir, subirAuto, bajar, guardarConfig, toggleToken, toggleAuto, poblarModal };
+    })();
+
+    // --- CONTEXT MENU MODULE ---
+    const CtxMenu = (function () {
+      let _pid = null;
+      const menu = () => document.getElementById('ctx-menu');
+
+      function open(e, pid, rowEl) {
+        _pid = pid;
+        const m = menu();
+        if (!m) return;
+
+        // Actualizar label gantt según estado actual
+        const isUnlocked = Gantt.isPersonUnlocked(pid);
+        const ganttLabel = document.getElementById('ctx-gantt-label');
+        if (ganttLabel) ganttLabel.textContent = isUnlocked ? 'Bloquear Calendario' : 'Editar Calendario';
+
+        // Posicionar
+        m.classList.remove('show');
+        m.style.left = '0'; m.style.top = '0';
+        requestAnimationFrame(() => {
+          let x = e.clientX, y = e.clientY;
+          m.style.display = 'block';
+          const mw = m.offsetWidth || 190, mh = m.offsetHeight || 100;
+          if (x + mw > window.innerWidth) x = window.innerWidth - mw - 8;
+          if (y + mh > window.innerHeight) y = window.innerHeight - mh - 8;
+          m.style.left = x + 'px';
+          m.style.top = y + 'px';
+          requestAnimationFrame(() => m.classList.add('show'));
+        });
+      }
+
+      function close() {
+        const m = menu();
+        if (!m) return;
+        m.classList.remove('show');
+      }
+
+      function action(type) {
+        close();
+        if (_pid === null) return;
+        if (type === 'config') {
+          UI.editPerson(_pid);
+        } else if (type === 'gantt') {
+          const isUnlocked = Gantt.isPersonUnlocked(_pid);
+          if (isUnlocked) {
+            Gantt.unlockPerson(_pid, false);
+            UI.toast('Calendario bloqueado', 'info');
+          } else {
+            Gantt.unlockPerson(_pid, true);
+            const person = Data.people().find(p => p.id === _pid);
+            UI.toast(`Editando fila de ${person ? person.name : ''}`, 'success');
+          }
+        }
+      }
+
+      // Cerrar al hacer click fuera
+      document.addEventListener('mousedown', (e) => {
+        const m = menu();
+        if (m && !m.contains(e.target)) close();
+      });
+
+      // Cerrar con Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+      }, true);
+
+      return { open, close, action };
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('theme_v5');
+      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.body.classList.add('dark-mode');
+        if (document.getElementById('theme-icon')) document.getElementById('theme-icon').innerHTML = '<use href="#icon-sun"/>';
+        if (document.getElementById('theme-label')) document.getElementById('theme-label').textContent = 'Modo claro';
+      }
+      UI.initYearSelector(); Holidays.cargar(); Areas.cargar();
+      if (Data.cargarDesdeLocalStorage()) { FileIO.markDirty(false); UI.refreshYearSelector(); } else { FileIO.createNew(); Data.setLoaded(); }
+      GistSync.init();
+      _resetColModeTimer(); // iniciar ciclo automático de columnas (después de Gantt.render para que #col-mode-progress exista)
+      document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target !== modal) return;
+          if (modal.id === 'modal-confirm') UI.closeConfirm();
+          else UI.goBack();
+        });
+      });
+
+      // NAVEGACIÓN POR TECLADO
+      const navState = (() => {
+        let rowIndex = -1, rangoIndex = 0;
+        function getVisibleRows() { return [...document.querySelectorAll('.person-row:not(.filtered-out)')]; }
+        function setFocus(rows, idx) { rows.forEach(r => r.classList.remove('keyboard-focus')); if (idx >= 0 && idx < rows.length) { rows[idx].classList.add('keyboard-focus'); rows[idx].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } }
+        function move(dir) { const rows = getVisibleRows(); if (!rows.length) return; rowIndex = Math.max(0, Math.min(rows.length - 1, rowIndex + dir)); rangoIndex = 0; setFocus(rows, rowIndex); }
+        function cycleRanges() {
+          const rows = getVisibleRows(); if (rowIndex < 0 || rowIndex >= rows.length) return;
+          const person = Data.people().find(p => p.name.toLowerCase() === rows[rowIndex].dataset.name); if (!person) return;
+          const currentYear = parseInt(document.getElementById('year-selector').value);
+          const fechas = Data.vacacionesDe(person.id).filter(f => parseInt(f.split('-')[0]) === currentYear).sort();
+          if (!fechas.length) return;
+          // Construir rangos como {start, end} para scrollear al centro de cada uno
+          const rangos = [];
+          let rStart = 0;
+          for (let i = 1; i <= fechas.length; i++) {
+            if (i === fechas.length || (new Date(fechas[i]) - new Date(fechas[i - 1])) / 86400000 !== 1) {
+              rangos.push({ start: fechas[rStart], end: fechas[i - 1] });
+              rStart = i;
+            }
+          }
+          const rango = rangos[rangoIndex % rangos.length];
+          const msStart = new Date(rango.start).getTime();
+          const msEnd = new Date(rango.end).getTime();
+          const midDate = new Date((msStart + msEnd) / 2).toISOString().split('T')[0];
+          Gantt.scrollToDate(midDate);
+          rangoIndex++;
+        }
+        function openFocused() { const rows = getVisibleRows(); if (rowIndex >= 0) { const p = Data.people().find(p => p.name.toLowerCase() === rows[rowIndex].dataset.name); if (p) UI.editPerson(p.id); } }
+        function reset() { rowIndex = -1; rangoIndex = 0; document.querySelectorAll('.person-row.keyboard-focus').forEach(r => r.classList.remove('keyboard-focus')); }
+        function focusRow(rowEl) {
+          const rows = getVisibleRows();
+          const idx = rows.indexOf(rowEl);
+          if (idx < 0) return;
+          if (idx !== rowIndex) { rowIndex = idx; rangoIndex = 0; setFocus(rows, rowIndex); }
+          cycleRanges();
+        }
+        setTimeout(() => Gantt.scrollToToday(), 300);
+        return { move, cycleRanges, openFocused, reset, focusRow, hasFocus: () => rowIndex >= 0 };
+      })();
+      Gantt.setContextMenuRowHandler((rowEl) => navState.focusRow(rowEl));
+
+      document.addEventListener('keydown', (e) => {
+        const isTyping = ['input', 'textarea', 'select'].includes(document.activeElement?.tagName?.toLowerCase());
+        const searchInput = document.getElementById('search-filter'), modalAbierto = document.querySelector('.modal.show');
+
+        if (e.key === 'Escape') {
+          if (Gantt.isPanoramicActive()) Gantt.closePanoramic(); else if (modalAbierto) UI.goBack(); else if (searchInput && searchInput.value) { Gantt.clearFilter(); navState.reset(); } else if (document.activeElement) document.activeElement.blur();
+          return;
+        }
+
+        // Ctrl+Z / Ctrl+Y — undo/redo
+        if (e.ctrlKey && !e.altKey && !e.shiftKey) {
+          if (e.key === 'z' || e.key === 'Z') { e.preventDefault(); Historial.undo(); return; }
+          if (e.key === 'y' || e.key === 'Y') { e.preventDefault(); Historial.redo(); return; }
+        }
+
+        if (e.key === 'Delete' && !isTyping) {
+          const editModal = document.getElementById('modal-edit-person');
+          if (editModal && editModal.classList.contains('show')) {
+            const btnDel = editModal.querySelector('.btn-danger');
+            if (btnDel) btnDel.click();
+            return;
+          }
+        }
+
+        if (e.key === 'Delete' && isTyping) {
+          const activeId = document.activeElement?.id;
+          if (activeId === 'range-start' || activeId === 'range-end') {
+            const editModal = document.getElementById('modal-edit-person');
+            if (editModal && editModal.classList.contains('show')) {
+              const btnDel = editModal.querySelector('.btn-danger');
+              if (btnDel) btnDel.click();
+              return;
+            }
+          }
+        }
+
+        if (e.key === 'Enter' && modalAbierto && document.activeElement?.tagName?.toLowerCase() !== 'button') {
+          if (document.activeElement?.id === 'range-end') { UI.confirmAddRange(); return; }
+          const btnConfirm = modalAbierto.querySelector('.btn-primary'); if (btnConfirm && !btnConfirm.disabled) btnConfirm.click(); return;
+        }
+
+        if (searchInput && searchInput.value.trim().length > 0 && !modalAbierto) {
+          // Flechas ↑↓: desde el input (primera vez) o navegando sin foco
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            if (document.activeElement === searchInput || navState.hasFocus()) {
+              e.preventDefault(); navState.move(e.key === 'ArrowDown' ? 1 : -1); searchInput.blur(); return;
+            }
+          }
+          // Scroll horizontal: solo si el input tiene foco
+          if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && document.activeElement === searchInput) {
+            e.preventDefault(); document.getElementById('gantt-container').scrollLeft += (e.key === 'ArrowRight' ? 1 : -1) * (Data.config().scrollSpeed ?? 5) * (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--day-width')) || 38); return;
+          }
+          // Space y Enter: mientras navState tenga foco y no se esté escribiendo
+          if (!isTyping && navState.hasFocus()) {
+            if (e.key === ' ') { e.preventDefault(); navState.cycleRanges(); return; }
+            if (e.key === 'Enter') { e.preventDefault(); navState.openFocused(); return; }
+          }
+        }
+
+        if (!isTyping && !modalAbierto && searchInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          if (/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]$/.test(e.key)) searchInput.focus();
+          else if (e.key === 'Backspace' && navState.hasFocus()) { searchInput.focus(); }
+        }
+      });
+
+      document.addEventListener('mousedown', (e) => {
+        if (Gantt.isPanoramicActive() && !document.getElementById('gantt-container').contains(e.target)) Gantt.closePanoramic();
+        ['p-area', 'ep-area'].forEach(prefix => {
+          const combobox = document.getElementById(prefix + '-combobox');
+          if (combobox && !combobox.contains(e.target)) Areas.comboClose(prefix);
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>
+
+<!--// ====================================================================
+    //                 NOTAS SISTEMA LUSHIBOSCA VERSION 204
+    // ====================================================================
+    
+     - CAMBIOS:
+    1) Undo/Redo: módulo Historial con hasta 30 pasos. Botones en header
+       y atajos Ctrl+Z / Ctrl+Y. Cubre: agregar/editar/eliminar personas,
+       asignar/quitar licencias en gantt y modal, guardar config.
+    2) GistSync: sincronización con GitHub Gist (subir/bajar/auto).
+       Modal de novedades antes de aplicar datos remotos. Token con scope
+       mínimo (gist). CSP actualizado para permitir api.github.com.
+
+     - BUGS CONOCIDOS:
+    1) 
+
+    -->
